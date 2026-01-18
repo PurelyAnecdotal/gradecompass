@@ -1,3 +1,7 @@
+export interface AttendanceResult {
+	Attendance: Attendance;
+}
+
 export interface Attendance {
 	Absences: Absences;
 	TotalExcused: AttendanceEventTotal;

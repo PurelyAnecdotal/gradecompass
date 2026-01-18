@@ -1,3 +1,7 @@
+export interface MailResult {
+	SynergyMailDataXML: MailData;
+}
+
 export interface MailData {
 	FolderListViews: FolderListViews;
 	InboxItemListings: InboxItemListings;

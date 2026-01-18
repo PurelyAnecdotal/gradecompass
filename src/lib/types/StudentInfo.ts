@@ -1,3 +1,7 @@
+export interface StudentInfoResult {
+	StudentInfo: StudentInfo;
+}
+
 export interface StudentInfo {
 	FormattedName: string;
 	PermID: number;

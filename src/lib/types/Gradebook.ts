@@ -1,3 +1,7 @@
+export interface GradebookResult {
+	Gradebook: Gradebook;
+}
+
 export interface Gradebook {
 	ReportingPeriods: ReportingPeriods;
 	ReportingPeriod: ReportPeriod;

@@ -1,3 +1,7 @@
+export interface DocumentsResult {
+	StudentDocuments: Documents;
+}
+
 export interface Documents {
 	StudentDocumentDatas: StudentDocumentDatas;
 	'_xmlns:xsd': string;

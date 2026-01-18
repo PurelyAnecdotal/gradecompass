@@ -30,11 +30,6 @@
 
 	const courses = $derived(data?.Courses.Course);
 
-	$effect(() => {
-		if (activeReportPeriodIndex === -1)
-			throw new Error('Could not find index of current reporting period');
-	});
-
 	function getCourseUnseenAssignmentsCount(course: Course) {
 		if (course.Marks === '') return 0;
 
@@ -135,9 +130,9 @@
 				<Alert.Title class="tracking-normal">
 					{totalUnseenAssignments} new assignment{totalUnseenAssignments === 1 ? '' : 's'}
 				</Alert.Title>
-				<Button variant="outline" onclick={() => clearAllUnseenAssignments(courses)}
-					>Mark as seen</Button
-				>
+				<Button variant="outline" onclick={() => clearAllUnseenAssignments(courses)}>
+					Mark as seen
+				</Button>
 			</Alert.Root>
 		{/if}
 	</div>

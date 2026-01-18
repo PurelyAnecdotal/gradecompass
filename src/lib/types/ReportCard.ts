@@ -1,3 +1,7 @@
+export interface ReportCardResult {
+	DocumentData: ReportCard | ReportCardNotFound;
+}
+
 export interface ReportCardNotFound {
 	'_xmlns:xsd': string;
 	'_xmlns:xsi': string;

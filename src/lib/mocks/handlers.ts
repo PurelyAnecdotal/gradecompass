@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/public';
-import { wrapEnvelope } from '$lib/synergy';
+import { Operation, wrapEnvelope } from '$lib/synergy';
 import { XMLParser } from 'fast-xml-parser';
 import { http, HttpResponse } from 'msw';
 
@@ -30,7 +30,7 @@ if (import.meta.env.DEV) {
 			import('./data/StudentInfo.xml?raw'),
 			import('./data/SynergyMailDataXML.xml?raw')
 		])
-	).map((module) => wrapEnvelope(module.default));
+	).map((module) => wrapEnvelope(module.default, Operation.Request));
 
 	attachment = AttachmentXML!;
 	attendance = Attendance!;

@@ -1,12 +1,32 @@
-import type { Attachment } from '$lib/types/Attachment';
-import type { Attendance } from '$lib/types/Attendance';
-import type { AuthToken } from '$lib/types/AuthToken';
-import type { Documents } from '$lib/types/Documents';
-import type { Gradebook } from '$lib/types/Gradebook';
-import type { MailData } from '$lib/types/MailData';
-import type { ReportCard } from '$lib/types/ReportCard';
-import type { StudentInfo } from '$lib/types/StudentInfo';
+import type { AttachmentResult } from '$lib/types/Attachment';
+import type { AttendanceResult } from '$lib/types/Attendance';
+import type { AuthTokenResult } from '$lib/types/AuthToken';
+import type { DocumentsResult } from '$lib/types/Documents';
+import type { MailResult } from '$lib/types/MailData';
+import type { StudentInfoResult } from '$lib/types/StudentInfo';
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
+import type { GradebookResult } from './types/Gradebook';
+import type { ReportCardResult } from './types/ReportCard';
+
+export const Operation = {
+	Request: 'ProcessWebServiceRequest',
+	RequestMultiWeb: 'ProcessWebServiceRequestMultiWeb'
+} as const;
+
+type Operation = (typeof Operation)[keyof typeof Operation];
+
+const MethodName = {
+	Gradebook: 'Gradebook',
+	Attendance: 'Attendance',
+	StudentInfo: 'StudentInfo',
+	Documents: 'GetStudentDocumentInitialData',
+	ReportCard: 'GetReportCardDocumentData',
+	Mail: 'SynergyMailGetData',
+	Attachment: 'SynergyMailGetAttachment',
+	GenerateAuthToken: 'GenerateAuthToken'
+} as const;
+
+type MethodName = (typeof MethodName)[keyof typeof MethodName];
 
 const alwaysArray = [
 	'Gradebook.Courses.Course',
@@ -26,15 +46,12 @@ const resultParser = new XMLParser({
 
 const builder = new XMLBuilder({ ignoreAttributes: false, attributeNamePrefix: '_' });
 
-export const unwrapEnvelope = (
-	envelopeStr: string,
-	operation = 'ProcessWebServiceRequest'
-): string =>
+export const unwrapEnvelope = (envelopeStr: string, operation: Operation): string =>
 	envelopeParser.parse(envelopeStr)['soap:Envelope']['soap:Body'][`${operation}Response`][
 		`${operation}Result`
 	];
 
-export const wrapEnvelope = (body: string, operation = 'ProcessWebServiceRequest'): string =>
+export const wrapEnvelope = (body: string, operation: Operation): string =>
 	builder.build({
 		'?xml': { _version: '1.0', _encoding: 'utf-8' },
 		'soap:Envelope': {
@@ -50,6 +67,80 @@ export const wrapEnvelope = (body: string, operation = 'ProcessWebServiceRequest
 		}
 	});
 
+export function parseResult<T>(resultStr: string): T {
+	const result = resultParser.parse(resultStr);
+
+	if (result.RT_ERROR) throw new Error(result.RT_ERROR._ERROR_MESSAGE);
+
+	return result;
+}
+
+interface Credentials {
+	domain: string;
+	userID: string;
+	password: string;
+}
+
+async function fetchSoap(
+	operation: Operation,
+	methodName: MethodName,
+	{ domain, userID, password }: Credentials,
+	params: Record<string, unknown> = {}
+) {
+	const res = await fetch(`https://${domain}/Service/PXPCommunication.asmx`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/soap+xml; charset=utf-8' },
+		body: builder.build({
+			'soap12:Envelope': {
+				'_xmlns:soap12': 'http://www.w3.org/2003/05/soap-envelope',
+				'soap12:Body': {
+					[operation]: {
+						_xmlns: 'http://edupoint.com/webservices/',
+						userID,
+						password,
+						skipLoginLog: true,
+						parent: false,
+						webServiceHandleName: 'PXPWebServices',
+						methodName,
+						paramStr: builder.build({ Params: params })
+					}
+				}
+			}
+		})
+	});
+
+	if (res.status !== 200) throw new Error(`HTTP ${res.status} when requesting ${operation}`);
+
+	return res;
+}
+
+async function soapRequest<T>(
+	operation: Operation,
+	methodName: MethodName,
+	credentials: Credentials,
+	params: Record<string, unknown> = {}
+) {
+	const res = await fetchSoap(operation, methodName, credentials, params);
+
+	const envelopeStr = await res.text();
+
+	const resultStr = unwrapEnvelope(envelopeStr, operation);
+
+	return parseResult<T>(resultStr);
+}
+
+const webServiceRequest = <T>(
+	methodName: MethodName,
+	credentials: Credentials,
+	params: Record<string, unknown> = {}
+) => soapRequest<T>(Operation.Request, methodName, credentials, params);
+
+const webServiceRequestMultiWeb = <T>(
+	methodName: MethodName,
+	credentials: Credentials,
+	params: Record<string, unknown> = {}
+) => soapRequest<T>(Operation.RequestMultiWeb, methodName, credentials, params);
+
 export class StudentAccount {
 	domain: string;
 	userID: string;
@@ -61,63 +152,70 @@ export class StudentAccount {
 		this.password = password;
 	}
 
-	async soapRequest(operation: string, methodName: string, params: Record<string, unknown> = {}) {
-		const res = await fetch(`https://${this.domain}/Service/PXPCommunication.asmx`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/soap+xml; charset=utf-8' },
-			body: builder.build({
-				'soap12:Envelope': {
-					'_xmlns:soap12': 'http://www.w3.org/2003/05/soap-envelope',
-					'soap12:Body': {
-						[operation]: {
-							_xmlns: 'http://edupoint.com/webservices/',
-							userID: this.userID,
-							password: this.password,
-							skipLoginLog: true,
-							parent: false,
-							webServiceHandleName: 'PXPWebServices',
-							methodName,
-							paramStr: builder.build({ Params: params })
-						}
-					}
-				}
-			})
-		});
-
-		if (res.status !== 200) throw new Error(`HTTP ${res.status} when requesting ${operation}`);
-
-		return res;
-	}
-
-	async soapParse(res: Response, operation: string) {
-		const envelopeStr = await res.text();
-
-		const resultStr = unwrapEnvelope(envelopeStr, operation);
-
-		const result = resultParser.parse(resultStr);
-
-		if (result.RT_ERROR) throw new Error(result.RT_ERROR._ERROR_MESSAGE);
-
-		return result;
-	}
-
-	async request(methodName: string, params: Record<string, unknown> = {}) {
-		const res = await this.soapRequest('ProcessWebServiceRequest', methodName, params);
-		return await this.soapParse(res, 'ProcessWebServiceRequest');
-	}
-
-	async requestMultiWeb(methodName: string, params: Record<string, unknown> = {}) {
-		const res = await this.soapRequest('ProcessWebServiceRequestMultiWeb', methodName, params);
-		return await this.soapParse(res, 'ProcessWebServiceRequestMultiWeb');
+	get credentials(): Credentials {
+		return {
+			domain: this.domain,
+			userID: this.userID,
+			password: this.password
+		};
 	}
 
 	async checkLogin() {
-		await this.request('StudentInfo');
+		await webServiceRequest<StudentInfoResult>('StudentInfo', this.credentials);
 	}
 
-	async getAuthToken(): Promise<AuthToken> {
+	async gradebookRequest(reportPeriod?: number) {
+		// When a specific report period is requested, if it is not available Synergy returns the current report period
+		const params = reportPeriod ? { ReportPeriod: reportPeriod } : undefined;
+
+		return await fetchSoap(Operation.Request, MethodName.Gradebook, this.credentials, params);
+	}
+
+	gradebookParse(envelopeStr: string) {
+		const resultStr = unwrapEnvelope(envelopeStr, Operation.Request);
+
+		return parseResult<GradebookResult>(resultStr).Gradebook;
+	}
+
+	async attendance() {
+		return (await webServiceRequest<AttendanceResult>(MethodName.Attendance, this.credentials))
+			.Attendance;
+	}
+
+	async studentInfo() {
+		return (await webServiceRequest<StudentInfoResult>(MethodName.StudentInfo, this.credentials))
+			.StudentInfo;
+	}
+
+	async documents() {
+		return (await webServiceRequest<DocumentsResult>(MethodName.Documents, this.credentials))
+			.StudentDocuments;
+	}
+
+	async reportCard(documentGU: string) {
 		return (
-			await this.requestMultiWeb('GenerateAuthToken', {
+			await webServiceRequest<ReportCardResult>(MethodName.ReportCard, this.credentials, {
+				DocumentGU: documentGU
+			})
+		).DocumentData;
+	}
+
+	async mailData() {
+		return (await webServiceRequest<MailResult>(MethodName.Mail, this.credentials))
+			.SynergyMailDataXML;
+	}
+
+	async attachment(attachmentGU: string) {
+		return (
+			await webServiceRequest<AttachmentResult>(MethodName.Attachment, this.credentials, {
+				SmAttachmentGU: attachmentGU
+			})
+		).AttachmentXML;
+	}
+
+	async getAuthToken() {
+		return (
+			await webServiceRequestMultiWeb<AuthTokenResult>('GenerateAuthToken', this.credentials, {
 				Username: this.userID,
 				TokenForClassWebSite: true,
 				Usertype: 0,
@@ -127,42 +225,5 @@ export class StudentAccount {
 				AssignmentID: 1
 			})
 		).AuthToken;
-	}
-
-	async gradebookRequest(reportPeriod?: number): Promise<Response> {
-		// When a specific report period is requested, if it is not available Synergy returns the current report period
-		const params = reportPeriod ? { ReportPeriod: reportPeriod } : undefined;
-
-		return await this.soapRequest('ProcessWebServiceRequest', 'Gradebook', params);
-	}
-
-	async gradebookParse(res: Response): Promise<Gradebook> {
-		return (await this.soapParse(res, 'ProcessWebServiceRequest')).Gradebook;
-	}
-
-	async attendance(): Promise<Attendance> {
-		return (await this.request('Attendance')).Attendance;
-	}
-
-	async studentInfo(): Promise<StudentInfo> {
-		return (await this.request('StudentInfo')).StudentInfo;
-	}
-
-	async documents(): Promise<Documents> {
-		return (await this.request('GetStudentDocumentInitialData')).StudentDocuments;
-	}
-
-	async reportCard(documentGU: string): Promise<ReportCard> {
-		return (await this.request('GetReportCardDocumentData', { DocumentGU: documentGU }))
-			.DocumentData;
-	}
-
-	async mailData(): Promise<MailData> {
-		return (await this.request('SynergyMailGetData')).SynergyMailDataXML;
-	}
-
-	async attachment(attachmentGU: string): Promise<Attachment> {
-		return (await this.request('SynergyMailGetAttachment', { SmAttachmentGU: attachmentGU }))
-			.AttachmentXML;
 	}
 }

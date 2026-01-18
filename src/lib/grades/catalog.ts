@@ -56,8 +56,10 @@ export async function getGradebookRecord(onReceivingData?: () => void, reportPer
 
 	onReceivingData?.();
 
+	const envelopeStr = await res.text();
+
 	const record: GradebookRecord = {
-		data: await studentAccount.gradebookParse(res),
+		data: studentAccount.gradebookParse(envelopeStr),
 		lastRefresh: Date.now()
 	};
 	return record;
