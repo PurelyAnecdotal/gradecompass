@@ -1,24 +1,26 @@
-import { LocalStorageKey, type LocalStorageCache } from '$lib';
+import { LocalStorageKey } from '$lib';
 import { acc } from '$lib/account.svelte';
-import type { Gradebook } from '$lib/types/Gradebook';
+import { parseGradebookXML, Operation, unwrapEnvelope } from '$lib/synergy';
+import type { ReportPeriod } from '$lib/types/Gradebook';
+
+interface GradebookRecord {
+	xml: string;
+	lastRefresh: number;
+}
 
 interface GradebookCatalogLocalStorageCache {
-	reportingPeriods: (null | LocalStorageCache<Gradebook>)[];
+	recordCache: (null | GradebookRecord)[];
 	defaultIndex: number;
 	overrideIndex: number | null;
 }
 
 export interface GradebookCatalog {
-	reportingPeriods: (undefined | GradebookRecord)[];
+	recordCache: (undefined | GradebookRecord)[];
 	defaultIndex: number;
 	overrideIndex?: number;
 	loadingIndex?: number;
 	receivingData?: boolean;
-}
-
-export interface GradebookRecord {
-	data: Gradebook;
-	lastRefresh: number;
+	canonicalReportPeriodEntries?: ReportPeriod[];
 }
 
 export function getGradebookCatalogFromLocalStorage() {
@@ -27,20 +29,24 @@ export function getGradebookCatalogFromLocalStorage() {
 
 	const cache: GradebookCatalogLocalStorageCache = JSON.parse(cacheStr);
 
+	const defaultRecord = cache.recordCache[cache.defaultIndex];
+
+	const canonicalReportPeriodEntries = defaultRecord
+		? parseGradebookXML(defaultRecord.xml).ReportingPeriods.ReportPeriod
+		: undefined;
+
 	const gradebookCatalog: GradebookCatalog = {
-		reportingPeriods: cache.reportingPeriods.map((lsCache) => lsCache ?? undefined),
+		recordCache: cache.recordCache.map((record) => record ?? undefined),
 		defaultIndex: cache.defaultIndex,
-		overrideIndex: cache.overrideIndex ?? undefined
+		overrideIndex: cache.overrideIndex ?? undefined,
+		canonicalReportPeriodEntries
 	};
 	return gradebookCatalog;
 }
 
 export function saveGradebookCatalogToLocalStorage(gradebookCatalog: GradebookCatalog) {
 	const cache: GradebookCatalogLocalStorageCache = {
-		reportingPeriods: gradebookCatalog.reportingPeriods.map((record) => {
-			if (!record) return null;
-			return { data: record.data, lastRefresh: record.lastRefresh };
-		}),
+		recordCache: gradebookCatalog.recordCache.map((record) => record ?? null),
 		defaultIndex: gradebookCatalog.defaultIndex,
 		overrideIndex: gradebookCatalog.overrideIndex ?? null
 	};
@@ -59,7 +65,7 @@ export async function getGradebookRecord(onReceivingData?: () => void, reportPer
 	const envelopeStr = await res.text();
 
 	const record: GradebookRecord = {
-		data: studentAccount.gradebookParse(envelopeStr),
+		xml: unwrapEnvelope(envelopeStr, Operation.Request),
 		lastRefresh: Date.now()
 	};
 	return record;
@@ -68,10 +74,12 @@ export async function getGradebookRecord(onReceivingData?: () => void, reportPer
 export async function getInitialGradebookCatalog() {
 	const defaultGradebookRecord = await getGradebookRecord();
 
-	const defaultGradebook = defaultGradebookRecord.data;
+	const defaultGradebook = parseGradebookXML(defaultGradebookRecord.xml);
+
+	const canonicalReportPeriodEntries = defaultGradebook.ReportingPeriods.ReportPeriod;
 
 	const reportingPeriods: (undefined | GradebookRecord)[] = Array(
-		defaultGradebook.ReportingPeriods.ReportPeriod.length
+		canonicalReportPeriodEntries.length
 	).fill(undefined);
 
 	const defaultIndex = parseInt(defaultGradebook.ReportingPeriod._Index);
@@ -79,19 +87,12 @@ export async function getInitialGradebookCatalog() {
 	reportingPeriods[defaultIndex] = defaultGradebookRecord;
 
 	const gradebookCatalog: GradebookCatalog = {
-		reportingPeriods,
-		defaultIndex
+		recordCache: reportingPeriods,
+		defaultIndex,
+		canonicalReportPeriodEntries
 	};
 	return gradebookCatalog;
 }
-
-export const getActiveGradebookRecordFromCatalog = (gradebookCatalog: GradebookCatalog) =>
-	gradebookCatalog.reportingPeriods[
-		gradebookCatalog.overrideIndex ?? gradebookCatalog.defaultIndex
-	];
-
-export const getDefaultGradebookRecordFromCatalog = (gradebookCatalog: GradebookCatalog) =>
-	gradebookCatalog.reportingPeriods[gradebookCatalog.defaultIndex];
 
 const cacheExpirationTime = 1000 * 60 * 5;
 

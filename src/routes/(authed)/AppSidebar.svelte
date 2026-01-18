@@ -5,6 +5,8 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Spinner } from '$lib/components/ui/spinner';
+	import { initializeGradebookCatalog } from '$lib/grades/catalog.svelte';
+	import { getActiveGradebook } from '$lib/grades/gradebook';
 	import AppWindowMacIcon from '@lucide/svelte/icons/app-window-mac';
 	import BellIcon from '@lucide/svelte/icons/bell';
 	import CircleUserIcon from '@lucide/svelte/icons/circle-user';
@@ -21,14 +23,13 @@
 	import { fade } from 'svelte/transition';
 	import { installPrompt } from '../../hooks.client';
 	import { loadStudentInfo, studentInfoState } from './studentinfo/studentInfo.svelte';
-	import { getActiveGradebookRecord, initializeGradebookCatalog } from '$lib/grades/catalog.svelte';
 
 	function logOut() {
 		localStorage.clear();
 		location.assign('/login');
 	}
 
-	const courses = $derived(getActiveGradebookRecord()?.data.Courses.Course);
+	const courses = $derived(getActiveGradebook()?.Courses.Course);
 
 	function installWebApp() {
 		$installPrompt.prompt?.();

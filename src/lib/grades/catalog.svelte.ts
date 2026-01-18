@@ -1,9 +1,9 @@
 import { LocalStorageKey } from '$lib';
 import { loadStudentAccount } from '$lib/account.svelte';
+import { parseGradebookXML } from '$lib/synergy';
+import type { Gradebook } from '$lib/types/Gradebook';
 import { toast } from 'svelte-sonner';
 import {
-	getActiveGradebookRecordFromCatalog,
-	getDefaultGradebookRecordFromCatalog,
 	getGradebookCatalogFromLocalStorage,
 	getGradebookRecord,
 	getInitialGradebookCatalog,
@@ -19,18 +19,8 @@ export const gradebookState = $state({}) as {
 	loadingError?: unknown;
 };
 
-export const getActiveGradebookRecord = () =>
-	gradebookState.gradebookCatalog
-		? getActiveGradebookRecordFromCatalog(gradebookState.gradebookCatalog)
-		: undefined;
-
-export const getDefaultGradebookRecord = () =>
-	gradebookState.gradebookCatalog
-		? getDefaultGradebookRecordFromCatalog(gradebookState.gradebookCatalog)
-		: undefined;
-
 export const getReportPeriodName = (index: number) =>
-	getDefaultGradebookRecord()?.data.ReportingPeriods.ReportPeriod[index]?._GradePeriod ??
+	gradebookState.gradebookCatalog?.canonicalReportPeriodEntries?.[index]?._GradePeriod ??
 	`Report Period ${index}`;
 
 const onReceivingData = () => {
@@ -51,23 +41,29 @@ export async function switchReportPeriod({
 	const requestedIndex = overrideIndex ?? gradebookState.gradebookCatalog.defaultIndex;
 	gradebookState.gradebookCatalog.loadingIndex = requestedIndex;
 
-	const record = gradebookState.gradebookCatalog.reportingPeriods[requestedIndex];
+	const record = gradebookState.gradebookCatalog.recordCache[requestedIndex];
 
 	if (record) setReportPeriodIndex(overrideIndex ?? gradebookState.gradebookCatalog.defaultIndex);
 
 	if (forceRefresh || !record || gradebookRefreshNeeded(record)) {
 		gradebookState.gradebookCatalog.receivingData = false;
-		const record = await getGradebookRecord(onReceivingData, overrideIndex);
+		const gradebookRecord = await getGradebookRecord(onReceivingData, overrideIndex);
 
-		const receivedIndex = parseInt(record.data.ReportingPeriod._Index);
+		const gradebook = parseGradebookXML(gradebookRecord.xml);
 
-		gradebookState.gradebookCatalog.reportingPeriods[receivedIndex] = record;
+		const receivedIndex = parseInt(gradebook.ReportingPeriod._Index);
 
-		if (overrideIndex === undefined) gradebookState.gradebookCatalog.defaultIndex = receivedIndex;
+		gradebookState.gradebookCatalog.recordCache[receivedIndex] = gradebookRecord;
+
+		if (overrideIndex === undefined) {
+			gradebookState.gradebookCatalog.defaultIndex = receivedIndex;
+			gradebookState.gradebookCatalog.canonicalReportPeriodEntries =
+				gradebook.ReportingPeriods.ReportPeriod;
+		}
 
 		if (receivedIndex !== requestedIndex) {
 			if (overrideIndex === undefined) {
-				toast.info(`${record.data.ReportingPeriod._GradePeriod} is now the default`, {
+				toast.info(`${gradebook.ReportingPeriod._GradePeriod} is now the default`, {
 					description: `${getReportPeriodName(requestedIndex)} may still be viewable`,
 					duration: 6000
 				});
@@ -124,15 +120,15 @@ export async function initializeGradebookCatalog() {
 
 		// If there aren't any seen assignment ids saved, mark all assignments as seen
 		if (seenAssignmentIDs.size === 0) {
-			gradebookState.gradebookCatalog.reportingPeriods.forEach((record) =>
-				record?.data?.Courses.Course.map((course) => course.Marks)
-					.filter((marks) => marks !== '')
-					.forEach((marks) =>
-						marks.Mark.Assignments.Assignment?.forEach((assignment) =>
-							seenAssignmentIDs.add(assignment._GradebookID)
-						)
-					)
-			);
+			gradebookState.gradebookCatalog.recordCache
+				.filter((record) => record !== undefined)
+				.flatMap((record) => parseGradebookXML(record.xml).Courses.Course)
+				.map((course) => course.Marks)
+				.filter((marks) => marks !== '')
+				.map((marks) => marks.Mark.Assignments.Assignment)
+				.filter((assignments) => assignments !== undefined)
+				.flat()
+				.forEach((assignment) => seenAssignmentIDs.add(assignment._GradebookID));
 
 			saveSeenAssignmentsToLocalStorage(seenAssignmentIDs);
 		}

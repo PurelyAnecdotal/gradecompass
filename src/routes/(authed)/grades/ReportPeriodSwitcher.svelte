@@ -2,6 +2,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import type { ReportPeriod } from '$lib/types/Gradebook';
 	import CloudCheckIcon from '@lucide/svelte/icons/cloud-check';
+	import HourglassIcon from '@lucide/svelte/icons/hourglass';
 
 	interface Props {
 		activeName: string;
@@ -10,6 +11,7 @@
 		switchReportPeriod: (index: number) => void;
 		hasReportPeriodCached?: (index: number) => boolean;
 		disabled?: boolean;
+		defaultIndex?: number;
 	}
 	let {
 		activeName,
@@ -17,7 +19,8 @@
 		reportPeriods,
 		hasReportPeriodCached,
 		switchReportPeriod,
-		disabled = false
+		disabled = false,
+		defaultIndex
 	}: Props = $props();
 </script>
 
@@ -39,6 +42,9 @@
 					{reportPeriod._GradePeriod}
 					{#if hasReportPeriodCached?.(index)}
 						<CloudCheckIcon />
+					{/if}
+					{#if index === defaultIndex}
+						<HourglassIcon />
 					{/if}
 				</Select.Item>
 			{/each}

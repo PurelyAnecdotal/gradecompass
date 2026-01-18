@@ -5,11 +5,11 @@
 	import { Button } from '$lib/components/ui/button';
 	import { parseSynergyAssignment } from '$lib/grades/assignments';
 	import {
-		getActiveGradebookRecord,
 		getReportPeriodName,
 		gradebookState,
 		switchReportPeriod
 	} from '$lib/grades/catalog.svelte';
+	import { getActiveGradebook } from '$lib/grades/gradebook';
 	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import type { Course } from '$lib/types/Gradebook';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
@@ -18,17 +18,15 @@
 
 	const gradebookCatalog = $derived(gradebookState.gradebookCatalog);
 
-	const data = $derived(getActiveGradebookRecord()?.data);
+	const gradebook = $derived(getActiveGradebook());
 
-	const reportPeriods = $derived(data?.ReportingPeriods.ReportPeriod);
-
-	const activeReportPeriod = $derived(data?.ReportingPeriod);
+	const activeReportPeriod = $derived(gradebook?.ReportingPeriod);
 
 	const activeReportPeriodIndex = $derived(
 		gradebookCatalog ? (gradebookCatalog.overrideIndex ?? gradebookCatalog.defaultIndex) : undefined
 	);
 
-	const courses = $derived(data?.Courses.Course);
+	const courses = $derived(gradebook?.Courses.Course);
 
 	function getCourseUnseenAssignmentsCount(course: Course) {
 		if (course.Marks === '') return 0;
@@ -81,15 +79,17 @@
 	<title>Grades - {brand}</title>
 </svelte:head>
 
-{#if reportPeriods && activeReportPeriod && activeReportPeriodIndex !== undefined && data}
+{#if activeReportPeriod && activeReportPeriodIndex !== undefined && gradebook}
 	<div class="m-4 space-y-4">
 		<ReportPeriodSwitcher
 			activeName={activeReportPeriod._GradePeriod}
 			activeIndex={activeReportPeriodIndex}
-			{reportPeriods}
+			reportPeriods={gradebookCatalog?.canonicalReportPeriodEntries ??
+				gradebook.ReportingPeriods.ReportPeriod}
 			switchReportPeriod={(index) => switchReportPeriod({ overrideIndex: index })}
-			hasReportPeriodCached={(index) => gradebookCatalog?.reportingPeriods[index] !== undefined}
+			hasReportPeriodCached={(index) => gradebookCatalog?.recordCache[index] !== undefined}
 			disabled={gradebookCatalog?.loadingIndex !== undefined}
+			defaultIndex={gradebookCatalog?.defaultIndex}
 		/>
 
 		{#if hasNoGrades}

@@ -5,8 +5,6 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Item from '$lib/components/ui/item';
 	import {
-		getActiveGradebookRecord,
-		getDefaultGradebookRecord,
 		getReportPeriodName,
 		gradebookState,
 		initializeGradebookCatalog,
@@ -26,13 +24,17 @@
 
 	const loadingIndex = $derived(gradebookCatalog?.loadingIndex);
 
-	const gradebookRecord = $derived(getActiveGradebookRecord());
-
-	const defaultReportPeriodName = $derived(
-		getDefaultGradebookRecord()?.data?.ReportingPeriod._GradePeriod
+	const gradebookRecord = $derived(
+		gradebookCatalog
+			? gradebookCatalog.recordCache[
+					gradebookCatalog.overrideIndex ?? gradebookCatalog.defaultIndex
+				]
+			: undefined
 	);
 
-	const activeReportPeriodName = $derived(gradebookRecord?.data?.ReportingPeriod._GradePeriod);
+	const defaultReportPeriodName = $derived(
+		gradebookCatalog ? getReportPeriodName(gradebookCatalog.defaultIndex) : undefined
+	);
 
 	const loadingReportPeriodName = $derived(
 		loadingIndex !== undefined ? getReportPeriodName(loadingIndex) : undefined
@@ -92,7 +94,12 @@
 
 			<Item.Content>
 				<Item.Title class="whitespace-nowrap">
-					<span>Viewing grades from <span class="font-bold">{activeReportPeriodName}</span></span>
+					<span>
+						Viewing grades from
+						<span class="font-bold">
+							{getReportPeriodName(gradebookCatalog.overrideIndex ?? gradebookCatalog.defaultIndex)}
+						</span>
+					</span>
 				</Item.Title>
 			</Item.Content>
 

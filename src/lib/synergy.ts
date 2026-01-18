@@ -141,6 +141,8 @@ const webServiceRequestMultiWeb = <T>(
 	params: Record<string, unknown> = {}
 ) => soapRequest<T>(Operation.RequestMultiWeb, methodName, credentials, params);
 
+export const parseGradebookXML = (resultStr: string) => parseResult<GradebookResult>(resultStr).Gradebook;
+
 export class StudentAccount {
 	domain: string;
 	userID: string;
@@ -169,12 +171,6 @@ export class StudentAccount {
 		const params = reportPeriod ? { ReportPeriod: reportPeriod } : undefined;
 
 		return await fetchSoap(Operation.Request, MethodName.Gradebook, this.credentials, params);
-	}
-
-	gradebookParse(envelopeStr: string) {
-		const resultStr = unwrapEnvelope(envelopeStr, Operation.Request);
-
-		return parseResult<GradebookResult>(resultStr).Gradebook;
 	}
 
 	async attendance() {
