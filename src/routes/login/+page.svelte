@@ -42,10 +42,10 @@
 
 		try {
 			await loginAccount.checkLogin();
-		} catch (e) {
+		} catch (error) {
 			loggingIn = false;
 
-			loginError = e instanceof Error ? e.message : 'An unknown error occurred';
+			loginError = error instanceof Error ? error.message : String(error);
 			return;
 		}
 

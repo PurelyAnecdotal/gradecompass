@@ -28,10 +28,7 @@
 		type ReactiveAssignment,
 		type RealAssignment
 	} from '$lib/grades/assignments';
-	import {
-		getCurrentGradebookState,
-		gradebooksState,
-	} from '$lib/grades/gradebook.svelte';
+	import { getCurrentGradebookState, gradebooksState } from '$lib/grades/gradebook.svelte';
 	import { saveSeenAssignmentsToLocalStorage } from '$lib/grades/seenAssignments';
 	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
@@ -349,9 +346,9 @@
 		<div class="flex justify-center">
 			<Alert.Root class="mx-4 w-fit">
 				<CircleXIcon />
-				<Alert.Title class="line-clamp-none"
-					>Looks like this this course doesn't have any assignments yet.</Alert.Title
-				>
+				<Alert.Title class="line-clamp-none">
+					Looks like this this course doesn't have any assignments yet.
+				</Alert.Title>
 			</Alert.Root>
 		</div>
 	{/if}

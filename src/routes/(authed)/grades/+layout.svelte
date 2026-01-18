@@ -18,7 +18,7 @@
 
 	const currentGradebookState = $derived(getCurrentGradebookState(gradebooksState));
 
-	const activeReportingPeriodName = $derived(
+	const defaultReportingPeriodName = $derived(
 		gradebooksState.records && gradebooksState.activeIndex !== undefined
 			? gradebooksState.records[gradebooksState.activeIndex]?.data?.ReportingPeriod._GradePeriod
 			: undefined
@@ -30,6 +30,10 @@
 		console.error('Error loading gradebooks:', error);
 		loadingError = error;
 	});
+
+	function resetReportPeriodOverride() {
+		showGradebook();
+	}
 </script>
 
 {#if !currentGradebookState?.loaded && loadingError === undefined}
@@ -50,7 +54,7 @@
 		<AlertCircleIcon />
 		<Alert.Title>An error occurred while loading grades.</Alert.Title>
 		<Alert.Description>
-			{loadingError instanceof Error ? loadingError.message : JSON.stringify(loadingError)}
+			{loadingError instanceof Error ? loadingError.message : String(loadingError)}
 		</Alert.Description>
 	</Alert.Root>
 {/if}
@@ -64,13 +68,16 @@
 
 			<Item.Content>
 				<Item.Title class="whitespace-nowrap">
-					Viewing grades from {currentGradebookState.data.ReportingPeriod._GradePeriod}
+					<span>
+						Viewing grades from
+						<span class="font-bold">{currentGradebookState.data.ReportingPeriod._GradePeriod}</span>
+					</span>
 				</Item.Title>
 			</Item.Content>
 
 			<Item.Actions>
-				<Button onclick={() => showGradebook()} variant="outline">
-					Return to {activeReportingPeriodName}
+				<Button onclick={resetReportPeriodOverride} variant="outline">
+					Return to {defaultReportingPeriodName}
 				</Button>
 			</Item.Actions>
 		</Item.Root>

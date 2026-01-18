@@ -69,8 +69,8 @@ export const loadGradebooks = async () => {
 			});
 			gradebooksState.activeIndex = cache.activeIndex;
 			gradebooksState.overrideIndex = cache.overrideIndex;
-		} catch (err) {
-			console.error(err);
+		} catch (error) {
+			console.error(error);
 			localStorage.removeItem(LocalStorageKey.gradebook);
 		}
 	}
