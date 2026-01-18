@@ -1,20 +1,20 @@
 <script lang="ts">
 	import { removeCourseType } from '$lib';
-	import { parseSynergyAssignment } from '$lib/assignments';
 	import { brand } from '$lib/brand';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import * as Select from '$lib/components/ui/select';
-	import type { Course } from '$lib/types/Gradebook';
-	import CircleXIcon from '@lucide/svelte/icons/circle-x';
-	import CourseButton from './CourseButton.svelte';
+	import { parseSynergyAssignment } from '$lib/grades/assignments';
 	import {
 		getCurrentGradebookState,
 		getPeriodIndex,
 		gradebooksState,
 		seenAssignmentIDs,
 		showGradebook
-	} from './gradebook.svelte';
+	} from '$lib/grades/gradebook.svelte';
+	import type { Course } from '$lib/types/Gradebook';
+	import CircleXIcon from '@lucide/svelte/icons/circle-x';
+	import CourseButton from './CourseButton.svelte';
 
 	const currentGradebookState = $derived(getCurrentGradebookState(gradebooksState));
 

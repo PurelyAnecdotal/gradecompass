@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as Chart from '$lib/components/ui/chart';
 	import {
 		calculateCourseGradePercentageFromCategories,
 		calculateCourseGradePercentageFromTotals,
@@ -9,8 +10,7 @@
 		type Calculable,
 		type CalculableWithCategory,
 		type Category
-	} from '$lib/assignments';
-	import * as Chart from '$lib/components/ui/chart';
+	} from '$lib/grades/assignments';
 	import { cn } from '$lib/utils';
 	import { Area, AreaChart, LinearGradient, Points } from 'layerchart';
 	import { SvelteMap } from 'svelte/reactivity';

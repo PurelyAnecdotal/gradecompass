@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { numberFlowDefaultEasing, removeCourseType, tailwindColors } from '$lib';
+	import { brand } from '$lib/brand';
+	import * as Alert from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { Label } from '$lib/components/ui/label';
 	import {
 		calculateAssignmentGPCs,
 		calculateAssignmentGPCsFromCategories,
@@ -22,12 +27,13 @@
 		randomAssignmentID,
 		type ReactiveAssignment,
 		type RealAssignment
-	} from '$lib/assignments';
-	import { brand } from '$lib/brand';
-	import * as Alert from '$lib/components/ui/alert';
-	import { Button } from '$lib/components/ui/button';
-	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { Label } from '$lib/components/ui/label';
+	} from '$lib/grades/assignments';
+	import {
+		getCurrentGradebookState,
+		gradebooksState,
+		saveSeenAssignments,
+		seenAssignmentIDs
+	} from '$lib/grades/gradebook.svelte';
 	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import Columns3CogIcon from '@lucide/svelte/icons/columns-3-cog';
@@ -36,12 +42,6 @@
 	import NumberFlow from '@number-flow/svelte';
 	import { untrack } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import {
-		getCurrentGradebookState,
-		gradebooksState,
-		saveSeenAssignments,
-		seenAssignmentIDs
-	} from '../gradebook.svelte';
 	import AssignmentTabs from './AssignmentTabs.svelte';
 	import CalculationError from './CalculationError.svelte';
 	import GradeCategoryTable from './GradeCategoryTable.svelte';
@@ -349,7 +349,9 @@
 		<div class="flex justify-center">
 			<Alert.Root class="mx-4 w-fit">
 				<CircleXIcon />
-				<Alert.Title class="line-clamp-none">Looks like this this course doesn't have any assignments yet.</Alert.Title>
+				<Alert.Title class="line-clamp-none"
+					>Looks like this this course doesn't have any assignments yet.</Alert.Title
+				>
 			</Alert.Root>
 		</div>
 	{/if}

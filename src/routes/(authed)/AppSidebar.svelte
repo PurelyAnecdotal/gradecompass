@@ -5,6 +5,11 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Spinner } from '$lib/components/ui/spinner';
+	import {
+		getCurrentGradebookState,
+		gradebooksState,
+		loadGradebooks
+	} from '$lib/grades/gradebook.svelte';
 	import AppWindowMacIcon from '@lucide/svelte/icons/app-window-mac';
 	import BellIcon from '@lucide/svelte/icons/bell';
 	import CircleUserIcon from '@lucide/svelte/icons/circle-user';
@@ -20,11 +25,6 @@
 	import type { Component } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { installPrompt } from '../../hooks.client';
-	import {
-		getCurrentGradebookState,
-		gradebooksState,
-		loadGradebooks
-	} from './grades/gradebook.svelte';
 	import { loadStudentInfo, studentInfoState } from './studentinfo/studentInfo.svelte';
 
 	function logOut() {

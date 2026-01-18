@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { bgColorVariants, type BadgeColor } from '$lib';
+	import * as Tabs from '$lib/components/ui/tabs';
 	import type {
 		Category,
 		Flowed,
 		HiddenAssignment,
 		ReactiveAssignment,
 		RealAssignment
-	} from '$lib/assignments';
-	import * as Tabs from '$lib/components/ui/tabs';
+	} from '$lib/grades/assignments';
 	import AssignmentCard from './AssignmentCard.svelte';
 
 	interface Props {

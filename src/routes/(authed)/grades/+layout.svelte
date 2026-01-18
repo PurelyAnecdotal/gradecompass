@@ -5,14 +5,14 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import * as Item from '$lib/components/ui/item';
-	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
-	import HistoryIcon from '@lucide/svelte/icons/history';
 	import {
 		getCurrentGradebookState,
 		gradebooksState,
 		loadGradebooks,
 		showGradebook
-	} from './gradebook.svelte';
+	} from '$lib/grades/gradebook.svelte';
+	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
+	import HistoryIcon from '@lucide/svelte/icons/history';
 
 	let { children } = $props();
 
