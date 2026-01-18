@@ -1,6 +1,6 @@
 import { LocalStorageKey, type LocalStorageCache } from '$lib';
 import { acc } from '$lib/account.svelte';
-import type { Gradebook, ReportPeriod } from '$lib/types/Gradebook';
+import type { Gradebook } from '$lib/types/Gradebook';
 
 interface GradebookCatalogLocalStorageCache {
 	reportingPeriods: (null | LocalStorageCache<Gradebook>)[];
@@ -13,6 +13,7 @@ export interface GradebookCatalog {
 	defaultIndex: number;
 	overrideIndex?: number;
 	loadingIndex?: number;
+	receivingData?: boolean;
 }
 
 export interface GradebookRecord {
@@ -47,12 +48,16 @@ export function saveGradebookCatalogToLocalStorage(gradebookCatalog: GradebookCa
 	localStorage.setItem(LocalStorageKey.gradebook, JSON.stringify(cache));
 }
 
-export async function getGradebookRecord(reportPeriod?: number) {
+export async function getGradebookRecord(onReceivingData?: () => void, reportPeriod?: number) {
 	const { studentAccount } = acc;
 	if (!studentAccount) throw new Error('Cannot get synergy gradebook: student account not loaded');
 
+	const res = await studentAccount.gradebookRequest(reportPeriod);
+
+	onReceivingData?.();
+
 	const record: GradebookRecord = {
-		data: await studentAccount.gradebook(reportPeriod),
+		data: await studentAccount.gradebookParse(res),
 		lastRefresh: Date.now()
 	};
 	return record;

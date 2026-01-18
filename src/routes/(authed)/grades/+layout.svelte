@@ -1,6 +1,5 @@
 <script lang="ts">
 	import BoundaryFailure from '$lib/components/BoundaryFailure.svelte';
-	import LoadingBanner from '$lib/components/LoadingBanner.svelte';
 	import RefreshIndicator from '$lib/components/RefreshIndicator.svelte';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
@@ -16,6 +15,8 @@
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import HistoryIcon from '@lucide/svelte/icons/history';
 	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
+	import GradebookLoadingBanner from './GradebookLoadingBanner.svelte';
 
 	let { children } = $props();
 
@@ -54,7 +55,14 @@
 </script>
 
 {#if (!gradebookCatalog || loadingIndex !== undefined) && loadingError === undefined}
-	<LoadingBanner>Loading {loadingReportPeriodName} grades...</LoadingBanner>
+	<div class="flex justify-center" in:fade out:fly={{ y: '-50%' }}>
+		{#key gradebookCatalog?.receivingData}
+			<GradebookLoadingBanner
+				{loadingReportPeriodName}
+				status={gradebookCatalog?.receivingData ? 'Receiving' : 'Pending'}
+			/>
+		{/key}
+	</div>
 {/if}
 
 {#if gradebookRecord?.lastRefresh !== undefined}

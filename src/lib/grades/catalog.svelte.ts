@@ -33,6 +33,11 @@ export const getReportPeriodName = (index: number) =>
 	getDefaultGradebookRecord()?.data.ReportingPeriods.ReportPeriod[index]?._GradePeriod ??
 	`Report Period ${index}`;
 
+const onReceivingData = () => {
+	if (!gradebookState.gradebookCatalog) return;
+	gradebookState.gradebookCatalog.receivingData = true;
+};
+
 export async function switchReportPeriod({
 	overrideIndex,
 	forceRefresh
@@ -51,7 +56,8 @@ export async function switchReportPeriod({
 	if (record) setReportPeriodIndex(overrideIndex ?? gradebookState.gradebookCatalog.defaultIndex);
 
 	if (forceRefresh || !record || gradebookRefreshNeeded(record)) {
-		const record = await getGradebookRecord(overrideIndex);
+		gradebookState.gradebookCatalog.receivingData = false;
+		const record = await getGradebookRecord(onReceivingData, overrideIndex);
 
 		const receivedIndex = parseInt(record.data.ReportingPeriod._Index);
 
