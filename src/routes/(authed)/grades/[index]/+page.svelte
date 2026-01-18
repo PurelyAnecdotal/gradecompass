@@ -28,7 +28,7 @@
 		type ReactiveAssignment,
 		type RealAssignment
 	} from '$lib/grades/assignments';
-	import { getCurrentGradebookState, gradebooksState } from '$lib/grades/gradebook.svelte';
+	import { getActiveGradebookRecord } from '$lib/grades/catalog.svelte';
 	import { saveSeenAssignmentsToLocalStorage } from '$lib/grades/seenAssignments';
 	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
@@ -45,11 +45,9 @@
 	import GradeChart from './GradeChart.svelte';
 	import TargetGradeCalculator from './TargetGradeCalculator.svelte';
 
-	const gradebookState = $derived(getCurrentGradebookState(gradebooksState));
-
 	const synergyCourse = $derived(
 		page.params.index !== undefined
-			? gradebookState?.data?.Courses.Course?.[parseInt(page.params.index)]
+			? getActiveGradebookRecord()?.data?.Courses.Course?.[parseInt(page.params.index)]
 			: undefined
 	);
 

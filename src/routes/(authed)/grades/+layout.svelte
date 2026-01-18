@@ -6,46 +6,62 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Item from '$lib/components/ui/item';
 	import {
-		getCurrentGradebookState,
-		gradebooksState,
-		loadGradebooks,
-		showGradebook
-	} from '$lib/grades/gradebook.svelte';
+		getActiveGradebookRecord,
+		getDefaultGradebookRecord,
+		getReportPeriodName,
+		gradebookState,
+		initializeGradebookCatalog,
+		switchReportPeriod
+	} from '$lib/grades/catalog.svelte';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import HistoryIcon from '@lucide/svelte/icons/history';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
 
-	const currentGradebookState = $derived(getCurrentGradebookState(gradebooksState));
+	const loadingError = $derived(gradebookState.loadingError);
 
-	const defaultReportingPeriodName = $derived(
-		gradebooksState.records && gradebooksState.activeIndex !== undefined
-			? gradebooksState.records[gradebooksState.activeIndex]?.data?.ReportingPeriod._GradePeriod
-			: undefined
+	const gradebookCatalog = $derived(gradebookState.gradebookCatalog);
+
+	const loadingIndex = $derived(gradebookCatalog?.loadingIndex);
+
+	const gradebookRecord = $derived(getActiveGradebookRecord());
+
+	const defaultReportPeriodName = $derived(
+		getDefaultGradebookRecord()?.data?.ReportingPeriod._GradePeriod
 	);
 
-	let loadingError: unknown = $state(undefined);
+	const activeReportPeriodName = $derived(gradebookRecord?.data?.ReportingPeriod._GradePeriod);
 
-	loadGradebooks().catch((error) => {
-		console.error('Error loading gradebooks:', error);
-		loadingError = error;
-	});
+	const loadingReportPeriodName = $derived(
+		loadingIndex !== undefined ? getReportPeriodName(loadingIndex) : undefined
+	);
 
 	function resetReportPeriodOverride() {
-		showGradebook();
+		switchReportPeriod();
 	}
+
+	function refreshGradebook() {
+		switchReportPeriod({
+			overrideIndex: gradebookCatalog?.overrideIndex,
+			forceRefresh: true
+		});
+	}
+
+	onMount(() => {
+		initializeGradebookCatalog();
+	});
 </script>
 
-{#if !currentGradebookState?.loaded && loadingError === undefined}
-	<LoadingBanner>Loading grades...</LoadingBanner>
+{#if (!gradebookCatalog || loadingIndex !== undefined) && loadingError === undefined}
+	<LoadingBanner>Loading {loadingReportPeriodName} grades...</LoadingBanner>
 {/if}
 
-{#if currentGradebookState?.lastRefresh !== undefined}
+{#if gradebookRecord?.lastRefresh !== undefined}
 	<RefreshIndicator
-		canRefresh={currentGradebookState.loaded}
-		lastRefresh={currentGradebookState.lastRefresh}
-		refresh={() =>
-			showGradebook(gradebooksState.overrideIndex ?? gradebooksState.activeIndex, true)}
+		canRefresh={loadingIndex === undefined}
+		lastRefresh={gradebookRecord.lastRefresh}
+		refresh={refreshGradebook}
 	/>
 {/if}
 
@@ -59,7 +75,7 @@
 	</Alert.Root>
 {/if}
 
-{#if gradebooksState.overrideIndex !== undefined && gradebooksState.records && gradebooksState.activeIndex !== undefined && currentGradebookState?.data}
+{#if gradebookCatalog?.overrideIndex !== undefined}
 	<div class="m-4 flex justify-center">
 		<Item.Root variant="outline" size="sm" class="w-full max-w-3xl">
 			<Item.Media>
@@ -68,16 +84,13 @@
 
 			<Item.Content>
 				<Item.Title class="whitespace-nowrap">
-					<span>
-						Viewing grades from
-						<span class="font-bold">{currentGradebookState.data.ReportingPeriod._GradePeriod}</span>
-					</span>
+					<span>Viewing grades from <span class="font-bold">{activeReportPeriodName}</span></span>
 				</Item.Title>
 			</Item.Content>
 
 			<Item.Actions>
 				<Button onclick={resetReportPeriodOverride} variant="outline">
-					Return to {defaultReportingPeriodName}
+					Return to {defaultReportPeriodName}
 				</Button>
 			</Item.Actions>
 		</Item.Root>

@@ -6,27 +6,30 @@
 	import * as Select from '$lib/components/ui/select';
 	import { parseSynergyAssignment } from '$lib/grades/assignments';
 	import {
-		getCurrentGradebookState,
-		getPeriodIndex,
-		gradebooksState,
-		showGradebook
-	} from '$lib/grades/gradebook.svelte';
+		getActiveGradebookRecord,
+		getReportPeriodName,
+		gradebookState,
+		switchReportPeriod
+	} from '$lib/grades/catalog.svelte';
 	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import type { Course } from '$lib/types/Gradebook';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
+	import CloudCheckIcon from '@lucide/svelte/icons/cloud-check';
 	import CourseButton from './CourseButton.svelte';
 
-	const currentGradebookState = $derived(getCurrentGradebookState(gradebooksState));
+	const gradebookCatalog = $derived(gradebookState.gradebookCatalog);
 
-	const reportPeriods = $derived(currentGradebookState?.data?.ReportingPeriods.ReportPeriod);
+	const data = $derived(getActiveGradebookRecord()?.data);
 
-	const activeReportPeriod = $derived(currentGradebookState?.data?.ReportingPeriod);
+	const reportPeriods = $derived(data?.ReportingPeriods.ReportPeriod);
+
+	const activeReportPeriod = $derived(data?.ReportingPeriod);
 
 	const activeReportPeriodIndex = $derived(
-		activeReportPeriod && reportPeriods ? getPeriodIndex(activeReportPeriod, reportPeriods) : undefined
+		gradebookCatalog ? (gradebookCatalog.overrideIndex ?? gradebookCatalog.defaultIndex) : undefined
 	);
 
-	const courses = $derived(currentGradebookState?.data?.Courses.Course);
+	const courses = $derived(data?.Courses.Course);
 
 	$effect(() => {
 		if (activeReportPeriodIndex === -1)
@@ -54,9 +57,9 @@
 
 	const hasNoGrades = $derived(
 		courses
-			? courses.map((course) =>
-					course.Marks === '' ? 'N/A' : course.Marks.Mark._CalculatedScoreString
-				).every((score) => score === 'N/A')
+			? courses
+					.map((course) => (course.Marks === '' ? 'N/A' : course.Marks.Mark._CalculatedScoreString))
+					.every((score) => score === 'N/A')
 			: false
 	);
 
@@ -84,24 +87,28 @@
 	<title>Grades - {brand}</title>
 </svelte:head>
 
-{#if reportPeriods && activeReportPeriod && activeReportPeriodIndex !== undefined && currentGradebookState?.data}
+{#if reportPeriods && activeReportPeriod && activeReportPeriodIndex !== undefined && data}
 	<div class="m-4 space-y-4">
 		<Select.Root
 			type="single"
-			value={activeReportPeriodIndex.toString()}
-			onValueChange={(value) => showGradebook(parseInt(value))}
+			bind:value={() => activeReportPeriodIndex.toString(), () => undefined}
+			onValueChange={(value) => switchReportPeriod({ overrideIndex: parseInt(value) })}
+			disabled={gradebookCatalog?.loadingIndex !== undefined}
 		>
 			<Select.Trigger class="mx-auto">
-				{currentGradebookState.data.ReportingPeriod._GradePeriod}
+				{data.ReportingPeriod._GradePeriod}
 			</Select.Trigger>
 
 			<Select.Content>
 				<Select.Group>
-					<Select.Label>Reporting Periods</Select.Label>
+					<Select.Label>Report Periods</Select.Label>
 
 					{#each reportPeriods as reportPeriod, index (reportPeriod._Index)}
 						<Select.Item value={index.toString()} label={reportPeriod._GradePeriod}>
 							{reportPeriod._GradePeriod}
+							{#if gradebookCatalog?.reportingPeriods[index]}
+								<CloudCheckIcon />
+							{/if}
 						</Select.Item>
 					{/each}
 				</Select.Group>
@@ -114,8 +121,11 @@
 				It looks like you don't have any grades yet in {activeReportPeriod._GradePeriod}.
 
 				{#if activeReportPeriodIndex > 0}
-					<Button onclick={() => showGradebook(activeReportPeriodIndex - 1)} variant="outline">
-						View {reportPeriods[activeReportPeriodIndex - 1]?._GradePeriod}
+					<Button
+						onclick={() => switchReportPeriod({ overrideIndex: activeReportPeriodIndex - 1 })}
+						variant="outline"
+					>
+						View {getReportPeriodName(activeReportPeriodIndex - 1)}
 					</Button>
 				{/if}
 			</Alert.Root>
@@ -143,7 +153,9 @@
 				<Alert.Title class="tracking-normal">
 					{totalUnseenAssignments} new assignment{totalUnseenAssignments === 1 ? '' : 's'}
 				</Alert.Title>
-				<Button variant="outline" onclick={() => clearAllUnseenAssignments(courses)}>Mark as seen</Button>
+				<Button variant="outline" onclick={() => clearAllUnseenAssignments(courses)}
+					>Mark as seen</Button
+				>
 			</Alert.Root>
 		{/if}
 	</div>
