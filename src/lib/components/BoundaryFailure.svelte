@@ -33,7 +33,7 @@
 
 			{#if viewError}
 				<p class="font-mono wrap-break-word">
-					{error instanceof Error ? error.message : JSON.stringify(error)}
+					{error instanceof Error ? error.message : String(error)}
 				</p>
 			{/if}
 		</Alert.Description>

@@ -11,7 +11,7 @@
 
 <div class="flex min-h-screen flex-col items-center">
 	<main class="flex grow items-center">
-		{@render children?.()}
+		{@render children()}
 	</main>
 
 	<Disclaimer />

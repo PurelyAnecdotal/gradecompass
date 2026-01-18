@@ -55,7 +55,7 @@ export async function getBlobURLFromBase64String(base64: string) {
 
 export enum LocalStorageKey {
 	token = 'token',
-	gradebook = 'gradebook3',
+	gradebook = 'gradebook4',
 	seenAssignmentIDs = 'seenAssignmentIDs',
 	attendance = 'attendance',
 	documents = 'documents',
@@ -97,8 +97,8 @@ export const loadRecord = async <T>(
 
 			if (cacheExpirationTime !== undefined && Date.now() - cache.lastRefresh < cacheExpirationTime)
 				refresh = false;
-		} catch (e) {
-			console.error(e);
+		} catch (error) {
+			console.error(error);
 			localStorage.removeItem(localStorageKey);
 		}
 	}
@@ -114,8 +114,8 @@ export const loadRecord = async <T>(
 			};
 
 			localStorage.setItem(localStorageKey, JSON.stringify(newCache));
-		} catch (err) {
-			console.error(err);
+		} catch (error) {
+			console.error(error);
 		}
 	}
 

@@ -1,19 +1,19 @@
 <script lang="ts">
 	import { numberFlowDefaultEasing, type BadgeColor } from '$lib';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Field from '$lib/components/ui/field';
+	import { NumberInput } from '$lib/components/ui/input';
+	import * as Item from '$lib/components/ui/item';
+	import { Label } from '$lib/components/ui/label';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import {
 		calculatePointsNeededForTargetGrade,
 		getCalculableAssignments,
 		getCalculableAssignmentsWithCategories,
 		type ReactiveAssignment,
 		type TargetGradeCalculatorCategoryDependentOptions
-	} from '$lib/assignments';
-	import { NumberInput } from '$lib/components/ui/input';
-	import { Button, buttonVariants } from '$lib/components/ui/button';
-	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Field from '$lib/components/ui/field';
-	import * as Item from '$lib/components/ui/item';
-	import { Label } from '$lib/components/ui/label';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
+	} from '$lib/grades/assignments';
 	import SquareDashedMousePointerIcon from '@lucide/svelte/icons/square-dashed-mouse-pointer';
 	import SquareMousePointerIcon from '@lucide/svelte/icons/square-mouse-pointer';
 	import XIcon from '@lucide/svelte/icons/x';

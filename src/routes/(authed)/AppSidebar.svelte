@@ -17,22 +17,18 @@
 	import NotebookTextIcon from '@lucide/svelte/icons/notebook-text';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import { mode, toggleMode } from 'mode-watcher';
-	import type { Component } from 'svelte';
+	import { onMount, type Component } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import { installPrompt } from '../../hooks.client';
-	import {
-		getCurrentGradebookState,
-		gradebooksState,
-		loadGradebooks
-	} from './grades/gradebook.svelte';
 	import { loadStudentInfo, studentInfoState } from './studentinfo/studentInfo.svelte';
+	import { getActiveGradebookRecord, initializeGradebookCatalog } from '$lib/grades/catalog.svelte';
 
 	function logOut() {
 		localStorage.clear();
 		location.assign('/login');
 	}
 
-	const currentGradebookState = $derived(getCurrentGradebookState(gradebooksState));
+	const courses = $derived(getActiveGradebookRecord()?.data.Courses.Course);
 
 	function installWebApp() {
 		$installPrompt.prompt?.();
@@ -85,7 +81,9 @@
 		}
 	};
 
-	loadGradebooks();
+	onMount(() => {
+		initializeGradebookCatalog();
+	});
 </script>
 
 {#snippet menuItem({
@@ -136,9 +134,9 @@
 				</Sidebar.MenuButton>
 
 				<svelte:boundary>
-					{#if currentGradebookState?.data}
+					{#if courses}
 						<Sidebar.MenuSub>
-							{#each currentGradebookState.data.Courses.Course as Course, index (Course._CourseID)}
+							{#each courses as Course, index (Course._CourseID)}
 								<Sidebar.MenuSubItem>
 									<Sidebar.MenuSubButton class="h-8 truncate text-base">
 										{#snippet child({ props })}

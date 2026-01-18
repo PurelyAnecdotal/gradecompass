@@ -1,47 +1,75 @@
 <script lang="ts">
 	import BoundaryFailure from '$lib/components/BoundaryFailure.svelte';
-	import LoadingBanner from '$lib/components/LoadingBanner.svelte';
 	import RefreshIndicator from '$lib/components/RefreshIndicator.svelte';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
 	import * as Item from '$lib/components/ui/item';
+	import {
+		getActiveGradebookRecord,
+		getDefaultGradebookRecord,
+		getReportPeriodName,
+		gradebookState,
+		initializeGradebookCatalog,
+		switchReportPeriod
+	} from '$lib/grades/catalog.svelte';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import HistoryIcon from '@lucide/svelte/icons/history';
-	import {
-		getCurrentGradebookState,
-		gradebooksState,
-		loadGradebooks,
-		showGradebook
-	} from './gradebook.svelte';
+	import { onMount } from 'svelte';
+	import { fade, fly } from 'svelte/transition';
+	import GradebookLoadingBanner from './GradebookLoadingBanner.svelte';
 
 	let { children } = $props();
 
-	const currentGradebookState = $derived(getCurrentGradebookState(gradebooksState));
+	const loadingError = $derived(gradebookState.loadingError);
 
-	const activeReportingPeriodName = $derived(
-		gradebooksState.records && gradebooksState.activeIndex !== undefined
-			? gradebooksState.records[gradebooksState.activeIndex]?.data?.ReportingPeriod._GradePeriod
-			: undefined
+	const gradebookCatalog = $derived(gradebookState.gradebookCatalog);
+
+	const loadingIndex = $derived(gradebookCatalog?.loadingIndex);
+
+	const gradebookRecord = $derived(getActiveGradebookRecord());
+
+	const defaultReportPeriodName = $derived(
+		getDefaultGradebookRecord()?.data?.ReportingPeriod._GradePeriod
 	);
 
-	let loadingError: unknown = $state(undefined);
+	const activeReportPeriodName = $derived(gradebookRecord?.data?.ReportingPeriod._GradePeriod);
 
-	loadGradebooks().catch((error) => {
-		console.error('Error loading gradebooks:', error);
-		loadingError = error;
+	const loadingReportPeriodName = $derived(
+		loadingIndex !== undefined ? getReportPeriodName(loadingIndex) : undefined
+	);
+
+	function resetReportPeriodOverride() {
+		switchReportPeriod();
+	}
+
+	function refreshGradebook() {
+		switchReportPeriod({
+			overrideIndex: gradebookCatalog?.overrideIndex,
+			forceRefresh: true
+		});
+	}
+
+	onMount(() => {
+		initializeGradebookCatalog();
 	});
-
-	const loadedOrError = $derived(currentGradebookState?.loaded ?? loadingError !== undefined);
 </script>
 
-<LoadingBanner show={!loadedOrError} loadingMsg="Loading grades..." />
+{#if (!gradebookCatalog || loadingIndex !== undefined) && loadingError === undefined}
+	<div class="flex justify-center" in:fade out:fly={{ y: '-50%' }}>
+		{#key gradebookCatalog?.receivingData}
+			<GradebookLoadingBanner
+				{loadingReportPeriodName}
+				status={gradebookCatalog?.receivingData ? 'Receiving' : 'Pending'}
+			/>
+		{/key}
+	</div>
+{/if}
 
-{#if currentGradebookState?.lastRefresh !== undefined}
+{#if gradebookRecord?.lastRefresh !== undefined}
 	<RefreshIndicator
-		loaded={currentGradebookState.loaded}
-		lastRefresh={currentGradebookState.lastRefresh}
-		refresh={() =>
-			showGradebook(gradebooksState.overrideIndex ?? gradebooksState.activeIndex, true)}
+		canRefresh={loadingIndex === undefined}
+		lastRefresh={gradebookRecord.lastRefresh}
+		refresh={refreshGradebook}
 	/>
 {/if}
 
@@ -50,12 +78,12 @@
 		<AlertCircleIcon />
 		<Alert.Title>An error occurred while loading grades.</Alert.Title>
 		<Alert.Description>
-			{loadingError instanceof Error ? loadingError.message : JSON.stringify(loadingError)}
+			{loadingError instanceof Error ? loadingError.message : String(loadingError)}
 		</Alert.Description>
 	</Alert.Root>
 {/if}
 
-{#if gradebooksState.overrideIndex !== undefined && gradebooksState.records && gradebooksState.activeIndex !== undefined && currentGradebookState?.data}
+{#if gradebookCatalog?.overrideIndex !== undefined}
 	<div class="m-4 flex justify-center">
 		<Item.Root variant="outline" size="sm" class="w-full max-w-3xl">
 			<Item.Media>
@@ -64,13 +92,13 @@
 
 			<Item.Content>
 				<Item.Title class="whitespace-nowrap">
-					Viewing reporting period {currentGradebookState.data.ReportingPeriod._GradePeriod}
+					<span>Viewing grades from <span class="font-bold">{activeReportPeriodName}</span></span>
 				</Item.Title>
 			</Item.Content>
 
 			<Item.Actions>
-				<Button onclick={() => showGradebook()} variant="outline">
-					Return to {activeReportingPeriodName}
+				<Button onclick={resetReportPeriodOverride} variant="outline">
+					Return to {defaultReportPeriodName}
 				</Button>
 			</Item.Actions>
 		</Item.Root>
@@ -78,7 +106,7 @@
 {/if}
 
 <svelte:boundary>
-	{@render children?.()}
+	{@render children()}
 
 	{#snippet failed(error, reset)}
 		<BoundaryFailure {error} {reset} />

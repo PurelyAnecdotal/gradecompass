@@ -83,7 +83,7 @@ async function generateMethodMockData(
 
 		console.log(`Saved ${fileName}`);
 	} catch (error) {
-		console.error(`Failed to fetch ${methodName}:`, error instanceof Error ? error.message : error);
+		console.error(`Failed to fetch ${methodName}:`, error);
 	}
 }
 

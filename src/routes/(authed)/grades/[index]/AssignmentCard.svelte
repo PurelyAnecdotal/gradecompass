@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { bgColorVariants, type BadgeColor } from '$lib';
-	import { calculateGradePercentage } from '$lib/assignments';
 	import DateBadge from '$lib/components/DateBadge.svelte';
 	import { Badge } from '$lib/components/ui/badge';
 	import { buttonVariants } from '$lib/components/ui/button';
@@ -11,6 +10,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import { Progress } from '$lib/components/ui/progress';
 	import * as Select from '$lib/components/ui/select';
+	import { calculateGradePercentage } from '$lib/grades/assignments';
 	import MessageCircleIcon from '@lucide/svelte/icons/message-circle';
 
 	type Props = {

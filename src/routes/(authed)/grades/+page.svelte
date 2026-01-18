@@ -1,33 +1,37 @@
 <script lang="ts">
 	import { removeCourseType } from '$lib';
-	import { parseSynergyAssignment } from '$lib/assignments';
 	import { brand } from '$lib/brand';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
-	import * as Select from '$lib/components/ui/select';
+	import { parseSynergyAssignment } from '$lib/grades/assignments';
+	import {
+		getActiveGradebookRecord,
+		getReportPeriodName,
+		gradebookState,
+		switchReportPeriod
+	} from '$lib/grades/catalog.svelte';
+	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import type { Course } from '$lib/types/Gradebook';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import CourseButton from './CourseButton.svelte';
-	import {
-		getCurrentGradebookState,
-		getPeriodIndex,
-		gradebooksState,
-		seenAssignmentIDs,
-		showGradebook
-	} from './gradebook.svelte';
+	import ReportPeriodSwitcher from './ReportPeriodSwitcher.svelte';
 
-	const currentGradebookState = $derived(getCurrentGradebookState(gradebooksState));
+	const gradebookCatalog = $derived(gradebookState.gradebookCatalog);
 
-	const allPeriods = $derived(currentGradebookState?.data?.ReportingPeriods.ReportPeriod);
+	const data = $derived(getActiveGradebookRecord()?.data);
 
-	const currentPeriod = $derived(currentGradebookState?.data?.ReportingPeriod);
+	const reportPeriods = $derived(data?.ReportingPeriods.ReportPeriod);
 
-	const currentPeriodIndex = $derived(
-		currentPeriod && allPeriods ? getPeriodIndex(currentPeriod, allPeriods) : undefined
+	const activeReportPeriod = $derived(data?.ReportingPeriod);
+
+	const activeReportPeriodIndex = $derived(
+		gradebookCatalog ? (gradebookCatalog.overrideIndex ?? gradebookCatalog.defaultIndex) : undefined
 	);
 
+	const courses = $derived(data?.Courses.Course);
+
 	$effect(() => {
-		if (currentPeriodIndex === -1)
+		if (activeReportPeriodIndex === -1)
 			throw new Error('Could not find index of current reporting period');
 	});
 
@@ -51,98 +55,89 @@
 	}
 
 	const hasNoGrades = $derived(
-		currentGradebookState?.data
-			? currentGradebookState.data.Courses.Course.map((course) =>
-					course.Marks === '' ? 'N/A' : course.Marks.Mark._CalculatedScoreString
-				).every((score) => score === 'N/A')
+		courses
+			? courses
+					.map((course) => (course.Marks === '' ? 'N/A' : course.Marks.Mark._CalculatedScoreString))
+					.every((score) => score === 'N/A')
 			: false
 	);
 
 	const totalUnseenAssignments = $derived.by(() => {
-		if (!currentGradebookState?.data) return 0;
+		if (!courses) return 0;
 
-		return currentGradebookState.data.Courses.Course.reduce((total, course) => {
+		return courses.reduce((total, course) => {
 			return total + getCourseUnseenAssignmentsCount(course);
 		}, 0);
 	});
 
-	function clearAllUnseenAssignments() {
-		if (!currentGradebookState?.data) return;
+	const clearCourseUnseenAssignments = (course: Course) => {
+		if (course.Marks === '') return;
+		const assignments = course.Marks.Mark.Assignments.Assignment;
+		if (!assignments) return;
 
-		currentGradebookState.data.Courses.Course.forEach((course) => {
-			if (course.Marks === '') return;
-			const assignments = course.Marks.Mark.Assignments.Assignment;
-			if (!assignments) return;
+		assignments.map(parseSynergyAssignment).forEach(({ id }) => seenAssignmentIDs.add(id));
+	};
 
-			assignments.map(parseSynergyAssignment).forEach(({ id }) => seenAssignmentIDs.add(id));
-		});
-	}
+	const clearAllUnseenAssignments = (courses: Course[]) =>
+		courses.forEach(clearCourseUnseenAssignments);
 </script>
 
 <svelte:head>
 	<title>Grades - {brand}</title>
 </svelte:head>
 
-{#if allPeriods && currentPeriod && currentPeriodIndex !== undefined && currentGradebookState?.data}
+{#if reportPeriods && activeReportPeriod && activeReportPeriodIndex !== undefined && data}
 	<div class="m-4 space-y-4">
-		<Select.Root
-			type="single"
-			value={currentPeriodIndex.toString()}
-			onValueChange={(value) => showGradebook(parseInt(value))}
-		>
-			<Select.Trigger class="mx-auto">
-				{currentGradebookState.data.ReportingPeriod._GradePeriod}
-			</Select.Trigger>
-
-			<Select.Content>
-				<Select.Group>
-					<Select.Label>Reporting Periods</Select.Label>
-
-					{#each allPeriods ?? [] as period, index (period._Index)}
-						<Select.Item value={index.toString()} label={period._GradePeriod}>
-							{period._GradePeriod}
-						</Select.Item>
-					{/each}
-				</Select.Group>
-			</Select.Content>
-		</Select.Root>
+		<ReportPeriodSwitcher
+			activeName={activeReportPeriod._GradePeriod}
+			activeIndex={activeReportPeriodIndex}
+			{reportPeriods}
+			switchReportPeriod={(index) => switchReportPeriod({ overrideIndex: index })}
+			hasReportPeriodCached={(index) => gradebookCatalog?.reportingPeriods[index] !== undefined}
+			disabled={gradebookCatalog?.loadingIndex !== undefined}
+		/>
 
 		{#if hasNoGrades}
 			<Alert.Root class="mx-auto flex w-fit items-center">
 				<CircleXIcon class="shrink-0" />
-				It looks like you don't have any grades yet in this reporting period.
+				It looks like you don't have any grades yet in {activeReportPeriod._GradePeriod}.
 
-				{#if currentPeriodIndex > 0}
-					<Button onclick={() => showGradebook(currentPeriodIndex - 1)} variant="outline">
-						View {allPeriods[currentPeriodIndex - 1]?._GradePeriod}
+				{#if activeReportPeriodIndex > 0}
+					<Button
+						onclick={() => switchReportPeriod({ overrideIndex: activeReportPeriodIndex - 1 })}
+						variant="outline"
+					>
+						View {getReportPeriodName(activeReportPeriodIndex - 1)}
 					</Button>
 				{/if}
 			</Alert.Root>
 		{/if}
 
 		<ol class="flex flex-col items-center gap-4">
-			{#each currentGradebookState.data.Courses.Course ?? [] as Course, index (Course._CourseID)}
+			{#each courses as course, index (course._CourseID)}
 				<li class="w-full max-w-3xl">
 					<CourseButton
 						{index}
-						name={removeCourseType(Course._CourseName)}
-						period={Course._Period}
-						room={Course._Room}
-						teacher={Course._Staff}
-						teacherEmail={Course._StaffEMail}
-						unseenAssignmentsCount={getCourseUnseenAssignmentsCount(Course)}
-						grade={getCourseGrade(Course)}
+						name={removeCourseType(course._CourseName)}
+						period={course._Period}
+						room={course._Room}
+						teacher={course._Staff}
+						teacherEmail={course._StaffEMail}
+						unseenAssignmentsCount={getCourseUnseenAssignmentsCount(course)}
+						grade={getCourseGrade(course)}
 					/>
 				</li>
 			{/each}
 		</ol>
 
-		{#if totalUnseenAssignments > 0}
+		{#if courses && totalUnseenAssignments > 0}
 			<Alert.Root class="mx-auto flex w-fit items-center gap-4 shadow-lg/30">
 				<Alert.Title class="tracking-normal">
 					{totalUnseenAssignments} new assignment{totalUnseenAssignments === 1 ? '' : 's'}
 				</Alert.Title>
-				<Button variant="outline" onclick={clearAllUnseenAssignments}>Mark as seen</Button>
+				<Button variant="outline" onclick={() => clearAllUnseenAssignments(courses)}
+					>Mark as seen</Button
+				>
 			</Alert.Root>
 		{/if}
 	</div>

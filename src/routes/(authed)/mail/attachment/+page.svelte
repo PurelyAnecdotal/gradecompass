@@ -40,9 +40,9 @@
 
 {#if attachmentURLPromise}
 	{#await attachmentURLPromise}
-		<LoadingBanner loadingMsg="Loading attachment..." />
+		<LoadingBanner>Loading attachment...</LoadingBanner>
 	{:then}
-		<LoadingBanner loadingMsg="Redirecting..." />
+		<LoadingBanner>Redirecting...</LoadingBanner>
 	{:catch error}
 		<div class="flex min-h-screen items-center justify-center">
 			<Alert class="block w-fit space-y-2">

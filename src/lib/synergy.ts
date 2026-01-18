@@ -26,7 +26,10 @@ const resultParser = new XMLParser({
 
 const builder = new XMLBuilder({ ignoreAttributes: false, attributeNamePrefix: '_' });
 
-export const unwrapEnvelope = (envelopeStr: string, operation = 'ProcessWebServiceRequest'): string =>
+export const unwrapEnvelope = (
+	envelopeStr: string,
+	operation = 'ProcessWebServiceRequest'
+): string =>
 	envelopeParser.parse(envelopeStr)['soap:Envelope']['soap:Body'][`${operation}Response`][
 		`${operation}Result`
 	];
@@ -83,6 +86,10 @@ export class StudentAccount {
 
 		if (res.status !== 200) throw new Error(`HTTP ${res.status} when requesting ${operation}`);
 
+		return res;
+	}
+
+	async soapParse(res: Response, operation: string) {
 		const envelopeStr = await res.text();
 
 		const resultStr = unwrapEnvelope(envelopeStr, operation);
@@ -94,12 +101,14 @@ export class StudentAccount {
 		return result;
 	}
 
-	request(methodName: string, params: Record<string, unknown> = {}) {
-		return this.soapRequest('ProcessWebServiceRequest', methodName, params);
+	async request(methodName: string, params: Record<string, unknown> = {}) {
+		const res = await this.soapRequest('ProcessWebServiceRequest', methodName, params);
+		return await this.soapParse(res, 'ProcessWebServiceRequest');
 	}
 
-	requestMultiWeb(methodName: string, params: Record<string, unknown> = {}) {
-		return this.soapRequest('ProcessWebServiceRequestMultiWeb', methodName, params);
+	async requestMultiWeb(methodName: string, params: Record<string, unknown> = {}) {
+		const res = await this.soapRequest('ProcessWebServiceRequestMultiWeb', methodName, params);
+		return await this.soapParse(res, 'ProcessWebServiceRequestMultiWeb');
 	}
 
 	async checkLogin() {
@@ -120,14 +129,15 @@ export class StudentAccount {
 		).AuthToken;
 	}
 
-	async gradebook(reportPeriod?: number): Promise<Gradebook> {
-		if (reportPeriod) {
-			// May return current reporting period instead of the one requested if the one requested cannot be found
+	async gradebookRequest(reportPeriod?: number): Promise<Response> {
+		// When a specific report period is requested, if it is not available Synergy returns the current report period
+		const params = reportPeriod ? { ReportPeriod: reportPeriod } : undefined;
 
-			return (await this.request('Gradebook', { ReportPeriod: reportPeriod })).Gradebook;
-		}
+		return await this.soapRequest('ProcessWebServiceRequest', 'Gradebook', params);
+	}
 
-		return (await this.request('Gradebook')).Gradebook;
+	async gradebookParse(res: Response): Promise<Gradebook> {
+		return (await this.soapParse(res, 'ProcessWebServiceRequest')).Gradebook;
 	}
 
 	async attendance(): Promise<Attendance> {

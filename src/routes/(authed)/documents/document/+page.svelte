@@ -40,9 +40,9 @@
 
 {#if reportCardURLPromise}
 	{#await reportCardURLPromise}
-		<LoadingBanner loadingMsg="Loading document..." />
+		<LoadingBanner>Loading document...</LoadingBanner>
 	{:then}
-		<LoadingBanner loadingMsg="Redirecting..." />
+		<LoadingBanner>Redirecting...</LoadingBanner>
 	{:catch error}
 		<div class="flex min-h-screen items-center justify-center">
 			<Alert class="block w-fit space-y-2">

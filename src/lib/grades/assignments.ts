@@ -1,4 +1,4 @@
-import type { AssignmentEntity, Course } from './types/Gradebook';
+import type { AssignmentEntity, Course } from '../types/Gradebook';
 
 export interface Category {
 	name: string;

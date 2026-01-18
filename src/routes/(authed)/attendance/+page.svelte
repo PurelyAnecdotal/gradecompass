@@ -48,11 +48,13 @@
 	<title>Attendance - {brand}</title>
 </svelte:head>
 
-<LoadingBanner show={!attendanceState.loaded} loadingMsg="Loading attendance..." />
+{#if !attendanceState.loaded}
+	<LoadingBanner>Loading attendance...</LoadingBanner>
+{/if}
 
 {#if attendanceState.lastRefresh !== undefined}
 	<RefreshIndicator
-		loaded={attendanceState.loaded}
+		canRefresh={attendanceState.loaded}
 		lastRefresh={attendanceState.lastRefresh}
 		refresh={() => loadAttendance(true)}
 	/>

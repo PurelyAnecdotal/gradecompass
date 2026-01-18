@@ -46,11 +46,13 @@
 	<title>Mail - {brand}</title>
 </svelte:head>
 
-<LoadingBanner show={!mailDataState.loaded} loadingMsg="Loading mail..." />
+{#if !mailDataState.loaded}
+	<LoadingBanner>Loading mail...</LoadingBanner>
+{/if}
 
 {#if mailDataState.lastRefresh !== undefined}
 	<RefreshIndicator
-		loaded={mailDataState.loaded}
+		canRefresh={mailDataState.loaded}
 		lastRefresh={mailDataState.lastRefresh}
 		refresh={() => loadMailData(true)}
 	/>

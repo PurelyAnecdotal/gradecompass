@@ -5,21 +5,20 @@
 
 	interface Props {
 		lastRefresh: number;
-		loaded: boolean;
+		canRefresh: boolean;
 		refresh: () => unknown;
 	}
-	let { lastRefresh, loaded, refresh }: Props = $props();
+	let { lastRefresh, canRefresh, refresh }: Props = $props();
 </script>
 
-<Badge
-	variant="secondary"
-	class="mx-auto my-2 text-sm p-1 px-3 text-tertiary-foreground"
->
+<Badge variant="secondary" class="text-tertiary-foreground mx-auto my-2 p-1 px-3 text-sm">
 	<ClockIcon class="h-4 w-4" />
 	Last updated {getRelativeTime(new Date(lastRefresh))}
 	<button
-		class={loaded ? 'cursor-pointer underline' : 'cursor-not-allowed'}
+		class={canRefresh ? 'cursor-pointer underline' : 'cursor-not-allowed'}
 		onclick={refresh}
-		disabled={!loaded}>Refresh</button
+		disabled={!canRefresh}
 	>
+		Refresh
+	</button>
 </Badge>
