@@ -3,7 +3,6 @@
 	import { brand } from '$lib/brand';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
-	import * as Select from '$lib/components/ui/select';
 	import { parseSynergyAssignment } from '$lib/grades/assignments';
 	import {
 		getActiveGradebookRecord,
@@ -14,8 +13,8 @@
 	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import type { Course } from '$lib/types/Gradebook';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
-	import CloudCheckIcon from '@lucide/svelte/icons/cloud-check';
 	import CourseButton from './CourseButton.svelte';
+	import ReportPeriodSwitcher from './ReportPeriodSwitcher.svelte';
 
 	const gradebookCatalog = $derived(gradebookState.gradebookCatalog);
 
@@ -89,31 +88,14 @@
 
 {#if reportPeriods && activeReportPeriod && activeReportPeriodIndex !== undefined && data}
 	<div class="m-4 space-y-4">
-		<Select.Root
-			type="single"
-			bind:value={() => activeReportPeriodIndex.toString(), () => undefined}
-			onValueChange={(value) => switchReportPeriod({ overrideIndex: parseInt(value) })}
+		<ReportPeriodSwitcher
+			activeName={activeReportPeriod._GradePeriod}
+			activeIndex={activeReportPeriodIndex}
+			{reportPeriods}
+			switchReportPeriod={(index) => switchReportPeriod({ overrideIndex: index })}
+			hasReportPeriodCached={(index) => gradebookCatalog?.reportingPeriods[index] !== undefined}
 			disabled={gradebookCatalog?.loadingIndex !== undefined}
-		>
-			<Select.Trigger class="mx-auto">
-				{data.ReportingPeriod._GradePeriod}
-			</Select.Trigger>
-
-			<Select.Content>
-				<Select.Group>
-					<Select.Label>Report Periods</Select.Label>
-
-					{#each reportPeriods as reportPeriod, index (reportPeriod._Index)}
-						<Select.Item value={index.toString()} label={reportPeriod._GradePeriod}>
-							{reportPeriod._GradePeriod}
-							{#if gradebookCatalog?.reportingPeriods[index]}
-								<CloudCheckIcon />
-							{/if}
-						</Select.Item>
-					{/each}
-				</Select.Group>
-			</Select.Content>
-		</Select.Root>
+		/>
 
 		{#if hasNoGrades}
 			<Alert.Root class="mx-auto flex w-fit items-center">
