@@ -64,11 +64,13 @@
 	<title>Student Info - {brand}</title>
 </svelte:head>
 
-<LoadingBanner show={!studentInfoState.loaded} loadingMsg="Loading student info..." />
+{#if !studentInfoState.loaded}
+	<LoadingBanner>Loading student info...</LoadingBanner>
+{/if}
 
 {#if studentInfoState.lastRefresh !== undefined}
 	<RefreshIndicator
-		loaded={studentInfoState.loaded}
+		canRefresh={studentInfoState.loaded}
 		lastRefresh={studentInfoState.lastRefresh}
 		refresh={() => loadStudentInfo(true)}
 	/>

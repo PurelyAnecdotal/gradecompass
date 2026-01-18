@@ -40,7 +40,7 @@
 
 			<div class="flex flex-1 flex-col">
 				<svelte:boundary>
-					{@render children?.()}
+					{@render children()}
 
 					{#snippet pending()}
 						<div class="flex min-h-screen w-full items-center justify-center">

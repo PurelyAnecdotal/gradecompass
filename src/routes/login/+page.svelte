@@ -80,7 +80,9 @@
 	<title>Log In - {brand}</title>
 </svelte:head>
 
-<LoadingBanner show={loggingIn} loadingMsg="Logging you in..." />
+{#if loggingIn}
+	<LoadingBanner>Logging you in...</LoadingBanner>
+{/if}
 
 {#if loginError}
 	<div in:fly={{ y: -50, duration: 200 }} class="fixed top-0 left-0 flex w-full justify-center p-4">

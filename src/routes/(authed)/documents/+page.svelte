@@ -51,11 +51,13 @@
 	<title>Documents - {brand}</title>
 </svelte:head>
 
-<LoadingBanner show={!documentsState.loaded} loadingMsg="Loading documents..." />
+{#if !documentsState.loaded}
+	<LoadingBanner>Loading documents...</LoadingBanner>
+{/if}
 
 {#if documentsState.lastRefresh !== undefined}
 	<RefreshIndicator
-		loaded={documentsState.loaded}
+		canRefresh={documentsState.loaded}
 		lastRefresh={documentsState.lastRefresh}
 		refresh={() => loadDocuments(true)}
 	/>

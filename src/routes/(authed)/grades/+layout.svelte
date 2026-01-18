@@ -30,15 +30,15 @@
 		console.error('Error loading gradebooks:', error);
 		loadingError = error;
 	});
-
-	const loadedOrError = $derived(currentGradebookState?.loaded ?? loadingError !== undefined);
 </script>
 
-<LoadingBanner show={!loadedOrError} loadingMsg="Loading grades..." />
+{#if !currentGradebookState?.loaded && loadingError === undefined}
+	<LoadingBanner>Loading grades...</LoadingBanner>
+{/if}
 
 {#if currentGradebookState?.lastRefresh !== undefined}
 	<RefreshIndicator
-		loaded={currentGradebookState.loaded}
+		canRefresh={currentGradebookState.loaded}
 		lastRefresh={currentGradebookState.lastRefresh}
 		refresh={() =>
 			showGradebook(gradebooksState.overrideIndex ?? gradebooksState.activeIndex, true)}
@@ -78,7 +78,7 @@
 {/if}
 
 <svelte:boundary>
-	{@render children?.()}
+	{@render children()}
 
 	{#snippet failed(error, reset)}
 		<BoundaryFailure {error} {reset} />

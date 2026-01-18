@@ -7,4 +7,4 @@
 
 <ModeWatcher />
 
-{@render children?.()}
+{@render children()}
