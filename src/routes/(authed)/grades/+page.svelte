@@ -9,9 +9,9 @@
 		getCurrentGradebookState,
 		getPeriodIndex,
 		gradebooksState,
-		seenAssignmentIDs,
 		showGradebook
 	} from '$lib/grades/gradebook.svelte';
+	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import type { Course } from '$lib/types/Gradebook';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import CourseButton from './CourseButton.svelte';

@@ -31,9 +31,9 @@
 	import {
 		getCurrentGradebookState,
 		gradebooksState,
-		saveSeenAssignments,
-		seenAssignmentIDs
 	} from '$lib/grades/gradebook.svelte';
+	import { saveSeenAssignmentsToLocalStorage } from '$lib/grades/seenAssignments';
+	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
 	import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import Columns3CogIcon from '@lucide/svelte/icons/columns-3-cog';
@@ -216,7 +216,7 @@
 
 	function markSeenAssignments() {
 		realAssignments.forEach(({ id }) => seenAssignmentIDs.add(id));
-		saveSeenAssignments();
+		saveSeenAssignmentsToLocalStorage(seenAssignmentIDs);
 	}
 </script>
 

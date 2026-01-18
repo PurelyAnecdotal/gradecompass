@@ -64,7 +64,7 @@
 
 			<Item.Content>
 				<Item.Title class="whitespace-nowrap">
-					Viewing reporting period {currentGradebookState.data.ReportingPeriod._GradePeriod}
+					Viewing grades from {currentGradebookState.data.ReportingPeriod._GradePeriod}
 				</Item.Title>
 			</Item.Content>
 

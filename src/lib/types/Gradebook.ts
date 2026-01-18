@@ -14,6 +14,17 @@ export interface Gradebook {
 	_GBStandardsTabDefault: string;
 }
 
+export interface ReportingPeriods {
+	ReportPeriod: ReportPeriod[];
+}
+
+export interface ReportPeriod {
+	_GradePeriod: string;
+	_Index: string;
+	_StartDate: string;
+	_EndDate: string;
+}
+
 export interface Courses {
 	Course: Course[];
 }
@@ -116,18 +127,4 @@ export interface AssignmentGradeCalc {
 	_PointsPossible: string;
 	_WeightedPct: string;
 	_CalculatedMark: string;
-}
-
-export interface ReportPeriod {
-	_GradePeriod: string;
-	_StartDate: string;
-	_EndDate: string;
-}
-
-export interface IndexedReportPeriod extends ReportPeriod {
-	_Index: string;
-}
-
-export interface ReportingPeriods {
-	ReportPeriod: IndexedReportPeriod[];
 }

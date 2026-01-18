@@ -1,7 +1,8 @@
 import { LocalStorageKey, type LocalStorageCache, type RecordState } from '$lib';
 import { acc } from '$lib/account.svelte';
 import type { Gradebook, ReportPeriod } from '$lib/types/Gradebook';
-import { SvelteSet } from 'svelte/reactivity';
+import { saveSeenAssignmentsToLocalStorage } from './seenAssignments';
+import { seenAssignmentIDs } from './seenAssignments.svelte';
 
 interface GradebooksLocalStorageCache {
 	records: (null | LocalStorageCache<Gradebook>)[];
@@ -21,8 +22,6 @@ export const getCurrentGradebookState = (gradebooksState: GradebooksState) =>
 	gradebooksState.records && gradebooksState.activeIndex !== undefined
 		? gradebooksState.records[gradebooksState.overrideIndex ?? gradebooksState.activeIndex]
 		: undefined;
-
-export const seenAssignmentIDs = new SvelteSet<string>();
 
 const cacheExpirationTime = 1000 * 60 * 5;
 
@@ -50,18 +49,6 @@ export const loadGradebooks = async () => {
 	const { studentAccount } = acc;
 	if (!studentAccount || gradebooksState.records || gradebooksState.activeIndex !== undefined)
 		return;
-
-	// Load seen assignment ids from localStorage
-	const seenIDsStr = localStorage.getItem(LocalStorageKey.seenAssignmentIDs);
-	if (seenIDsStr !== null) {
-		try {
-			const seenIDs: string[] = JSON.parse(seenIDsStr);
-			seenIDs.forEach((id) => seenAssignmentIDs.add(id));
-		} catch (e) {
-			console.error(e);
-			localStorage.removeItem(LocalStorageKey.seenAssignmentIDs);
-		}
-	}
 
 	// Try to load the state from the localStorage cache
 	const cacheStr = localStorage.getItem(LocalStorageKey.gradebook);
@@ -129,7 +116,7 @@ export const loadGradebooks = async () => {
 					)
 				)
 		);
-		saveSeenAssignments();
+		saveSeenAssignmentsToLocalStorage(seenAssignmentIDs);
 	}
 };
 
@@ -189,6 +176,3 @@ export const showGradebook = async (overrideIndex?: number, forceRefresh = false
 
 	saveGradebooksState();
 };
-
-export const saveSeenAssignments = () =>
-	localStorage.setItem(LocalStorageKey.seenAssignmentIDs, JSON.stringify([...seenAssignmentIDs]));
