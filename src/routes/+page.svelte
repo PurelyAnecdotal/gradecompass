@@ -55,7 +55,7 @@
 			class="xs:gap-0 flex flex-col-reverse items-center gap-4 perspective-normal xl:m-8 xl:my-16 xl:flex-row xl:gap-4"
 		>
 			<main
-				class="xs:relative xs:-top-16 xs:-mb-16 flex flex-col items-center gap-4 xl:static xl:top-0 xl:z-0 xl:mb-0"
+				class="xs:relative xs:-top-16 xs:-mb-16 z-10 flex flex-col items-center gap-4 xl:static xl:top-0 xl:z-0 xl:mb-0"
 			>
 				<Card.Root class="xs:shadow-lg max-w-sm xl:shadow-sm">
 					<Card.Header>
@@ -86,7 +86,7 @@
 			</main>
 
 			<div
-				class="border-primary-foreground max-w-4xl flex-1 overflow-hidden rounded-xl border-2 shadow-sm xl:max-w-4xl xl:-translate-x-6 xl:scale-90 xl:rotate-x-1 xl:-rotate-y-5 xl:shadow-lg"
+				class="border-primary-foreground xs:rotate-x-1 max-w-4xl flex-1 overflow-hidden rounded-xl border-2 shadow-sm xl:max-w-4xl xl:-translate-x-6 xl:scale-90 xl:rotate-x-1 xl:-rotate-y-5 xl:shadow-lg"
 			>
 				{#snippet demoImage(dark: boolean)}
 					<img
@@ -97,7 +97,7 @@
 						alt="GradeCompass class page demonstrating hypothetical mode"
 					/>
 				{/snippet}
-				
+
 				{@render demoImage(false)}
 				{@render demoImage(true)}
 			</div>
