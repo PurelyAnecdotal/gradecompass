@@ -27,7 +27,7 @@
 		<AppSidebar />
 
 		<Sidebar.Inset class="min-w-0">
-			<header class="bg-background sticky top-0 flex shrink-0 items-center p-2 md:hidden">
+			<header class="bg-background z-20 sticky top-0 flex shrink-0 items-center p-2 md:hidden">
 				<Sidebar.Trigger />
 				<a
 					href="/grades"

@@ -220,11 +220,20 @@
 </svelte:head>
 
 {#if synergyCourse}
-	<div class={['bg-background sticky top-0 z-10 transition-all', !pinChart && 'md:bg-transparent']}>
+	<div
+		class={[
+			'bg-background sticky top-10 z-10 transition-all md:top-0',
+			!pinChart && 'md:bg-transparent'
+		]}
+	>
 		<div class="flex justify-between rounded-b-lg">
-			<span class="bg-background truncate rounded-br-xl p-4 text-2xl">{courseName}</span>
+			<div class="bg-background flex items-center truncate rounded-br-xl px-4 py-2">
+				<span class="truncate text-xl sm:text-2xl">{courseName}</span>
+			</div>
 
-			<span class="bg-background flex shrink-0 items-center rounded-bl-xl p-4 text-2xl">
+			<div
+				class="bg-background flex shrink-0 items-center rounded-bl-xl px-4 py-2 text-xl sm:text-2xl"
+			>
 				{#if hypotheticalMode && !categories && !rawGradeCalcMatches}
 					<CircleAlertIcon class="mr-2 h-5 w-5" />
 				{/if}
@@ -236,7 +245,7 @@
 						spinTiming={{ duration: 400, easing: numberFlowDefaultEasing }}
 					/>
 				{/if}
-			</span>
+			</div>
 		</div>
 		{#if pinChart}
 			{@render chart()}
