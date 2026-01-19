@@ -39,7 +39,7 @@
 </script>
 
 <Tabs.Root value="all" class="mx-4 gap-4">
-	<Tabs.List class="h-12 max-w-full mx-auto justify-start overflow-x-auto">
+	<Tabs.List class="mx-auto h-12 max-w-full justify-start overflow-x-auto">
 		<Tabs.Trigger value="all">All</Tabs.Trigger>
 
 		{#each assignmentCategoryNames as categoryName (categoryName)}

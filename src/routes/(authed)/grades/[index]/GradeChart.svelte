@@ -107,7 +107,7 @@
 	});
 </script>
 
-<Chart.Container config={{}} class="m-4 h-64 aspect-auto">
+<Chart.Container config={{}} class="m-4 aspect-auto h-64">
 	<!-- https://techniq-docs-v2.layerchart.pages.dev/docs -->
 	<AreaChart data={chartData} x="date" y="grade" yDomain={null}>
 		{#snippet tooltip()}

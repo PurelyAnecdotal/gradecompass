@@ -1,7 +1,6 @@
 import { LocalStorageKey } from '$lib';
 import { loadStudentAccount } from '$lib/account.svelte';
 import { parseGradebookXML } from '$lib/synergy';
-import type { Gradebook } from '$lib/types/Gradebook';
 import { toast } from 'svelte-sonner';
 import {
 	getGradebookCatalogFromLocalStorage,

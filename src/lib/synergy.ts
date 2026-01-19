@@ -13,7 +13,7 @@ export const Operation = {
 	RequestMultiWeb: 'ProcessWebServiceRequestMultiWeb'
 } as const;
 
-type Operation = (typeof Operation)[keyof typeof Operation];
+export type Operation = (typeof Operation)[keyof typeof Operation];
 
 const MethodName = {
 	Gradebook: 'Gradebook',
@@ -141,7 +141,8 @@ const webServiceRequestMultiWeb = <T>(
 	params: Record<string, unknown> = {}
 ) => soapRequest<T>(Operation.RequestMultiWeb, methodName, credentials, params);
 
-export const parseGradebookXML = (resultStr: string) => parseResult<GradebookResult>(resultStr).Gradebook;
+export const parseGradebookXML = (resultStr: string) =>
+	parseResult<GradebookResult>(resultStr).Gradebook;
 
 export class StudentAccount {
 	domain: string;

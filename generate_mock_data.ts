@@ -4,7 +4,7 @@ import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import * as readline from 'node:readline';
-import { unwrapEnvelope } from './src/lib/synergy';
+import { unwrapEnvelope, type Operation } from './src/lib/synergy';
 
 async function prompt(question: string): Promise<string> {
 	const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -31,7 +31,7 @@ async function soapRequest(
 	password: string,
 	methodName: string,
 	params: Map<string, unknown> = new Map(),
-	operation = 'ProcessWebServiceRequest'
+	operation: Operation = 'ProcessWebServiceRequest'
 ) {
 	const res = await fetch(`https://${domain}/Service/PXPCommunication.asmx`, {
 		method: 'POST',
@@ -109,12 +109,12 @@ const gradebookParams: Map<string, string> =
 
 const resources: ([string, string] | [string, string, Map<string, unknown>])[] = [
 	['Gradebook', 'Gradebook.xml', gradebookParams],
-	// ['Attendance', 'Attendance.xml'],
-	// ['GetStudentDocumentInitialData', 'StudentDocuments.xml'],
-	// ['GetReportCardDocumentData', 'DocumentData.xml', new Map([['DocumentGU', documentGU]])],
-	// ['SynergyMailGetData', 'SynergyMailDataXML.xml'],
-	// ['SynergyMailGetAttachment', 'AttachmentXML.xml', new Map([['SmAttachmentGU', attachmentGU]])],
-	// ['StudentInfo', 'StudentInfo.xml']
+	['Attendance', 'Attendance.xml'],
+	['GetStudentDocumentInitialData', 'StudentDocuments.xml'],
+	['GetReportCardDocumentData', 'DocumentData.xml', new Map([['DocumentGU', documentGU]])],
+	['SynergyMailGetData', 'SynergyMailDataXML.xml'],
+	['SynergyMailGetAttachment', 'AttachmentXML.xml', new Map([['SmAttachmentGU', attachmentGU]])],
+	['StudentInfo', 'StudentInfo.xml']
 ];
 
 await Promise.allSettled(

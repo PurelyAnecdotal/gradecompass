@@ -99,7 +99,7 @@
 
 <Card.Root
 	class={[
-		'items-center gap-2 p-4 transition duration-500 sm:flex-row max-w-full',
+		'max-w-full items-center gap-2 p-4 transition duration-500 sm:flex-row',
 		unseen && 'border-l-4 border-l-green-400 dark:border-l-green-600'
 	]}
 >

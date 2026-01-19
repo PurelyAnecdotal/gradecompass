@@ -27,7 +27,7 @@
 		<AppSidebar />
 
 		<Sidebar.Inset class="min-w-0">
-			<header class="sticky top-0 flex shrink-0 items-center p-2 md:hidden bg-background">
+			<header class="bg-background sticky top-0 flex shrink-0 items-center p-2 md:hidden">
 				<Sidebar.Trigger />
 				<a
 					href="/grades"
@@ -56,7 +56,7 @@
 
 			{#if page.url.pathname !== '/feedback'}
 				<div class="mt-auto w-full text-xs">
-					<div class="mx-auto w-fit p-4 pb-0 text-muted-foreground">
+					<div class="text-muted-foreground mx-auto w-fit p-4 pb-0">
 						<a href="/feedback" class="text-tertiary-foreground">Report an issue</a> •
 						<a href="/feedback" class="text-tertiary-foreground">Suggest a feature</a> •
 						<a href="/feedback" class="text-tertiary-foreground">Provide feedback</a>

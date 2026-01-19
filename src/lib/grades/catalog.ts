@@ -1,6 +1,6 @@
 import { LocalStorageKey } from '$lib';
 import { acc } from '$lib/account.svelte';
-import { parseGradebookXML, Operation, unwrapEnvelope } from '$lib/synergy';
+import { Operation, parseGradebookXML, unwrapEnvelope } from '$lib/synergy';
 import type { ReportPeriod } from '$lib/types/Gradebook';
 
 interface GradebookRecord {

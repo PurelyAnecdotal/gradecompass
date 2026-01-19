@@ -59,12 +59,14 @@
 				{/if}
 			</p>
 
-			{#if (env.PUBLIC_ALLOWED_MIGRATION_ORIGINS !== undefined && sourceOrigin !== null && hasExistingData)}
+			{#if env.PUBLIC_ALLOWED_MIGRATION_ORIGINS !== undefined && sourceOrigin !== null && hasExistingData}
 				<p>You already have data here. Would you like to overwrite it?</p>
 
 				<div class="flex gap-2">
 					<Button href="/grades" variant="outline" class="flex-1">Cancel</Button>
-					<Button onclick={startMigration} variant="destructive" class="flex-1 cursor-pointer">Overwrite</Button>
+					<Button onclick={startMigration} variant="destructive" class="flex-1 cursor-pointer">
+						Overwrite
+					</Button>
 				</div>
 			{/if}
 		</Card.Content>

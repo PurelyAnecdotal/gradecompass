@@ -14,7 +14,7 @@
 
 <div class="flex min-h-screen flex-col items-center">
 	<main class="flex grow items-center">
-		<Card.Root class="max-w-xl m-4">
+		<Card.Root class="m-4 max-w-xl">
 			<Card.Header>
 				<Card.Title>About the privacy of {brand}</Card.Title>
 			</Card.Header>

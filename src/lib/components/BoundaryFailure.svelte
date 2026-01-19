@@ -22,12 +22,12 @@
 
 		<Alert.Description class="space-y-2">
 			<p>
-				Try <button onclick={reset} class="underline">refreshing</button> the page.
-				If the problem persists, please
+				Try <button onclick={reset} class="underline">refreshing</button> the page. If the problem
+				persists, please
 				<a href="/feedback" class="underline" data-sveltekit-reload>contact us</a>.
 			</p>
 
-			<button class="text-xs text-muted-foreground underline" onclick={toggleViewError}>
+			<button class="text-muted-foreground text-xs underline" onclick={toggleViewError}>
 				{viewError ? 'Hide' : 'Show'} error details
 			</button>
 

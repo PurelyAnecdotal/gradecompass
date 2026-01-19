@@ -12,9 +12,7 @@
 
 	<Card.Content class="flex flex-wrap gap-2">
 		<Button href="/signup/google" variant="outline" size="lg" class="flex-1">with Google</Button>
-		<Button href="/login" variant="outline" size="lg" class="flex-1">
-			with a password
-		</Button>
+		<Button href="/login" variant="outline" size="lg" class="flex-1">with a password</Button>
 	</Card.Content>
 
 	<Card.Footer>

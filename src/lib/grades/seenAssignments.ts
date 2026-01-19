@@ -8,7 +8,7 @@ export function getSeenAssignmentsFromLocalStorage() {
 
 	const seenAssignmentIDs = new Set<string>();
 	seenIDs.forEach((id) => seenAssignmentIDs.add(id));
-	
+
 	return seenAssignmentIDs;
 }
 
