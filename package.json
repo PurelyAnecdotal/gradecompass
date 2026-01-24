@@ -34,7 +34,7 @@
 		"fast-xml-parser": "^5.3.3",
 		"file-type": "^21.3.0",
 		"globals": "^17.0.0",
-		"layerchart": "2.0.0-next.43",
+		"layerchart": "2.0.0-next.44",
 		"mode-watcher": "^1.1.0",
 		"msw": "^2.12.7",
 		"prettier": "^3.8.0",
