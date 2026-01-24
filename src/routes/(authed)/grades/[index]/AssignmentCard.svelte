@@ -199,7 +199,13 @@
 			{/if}
 
 			{#if hidden}
-				<Badge variant="secondary" outline={true} class="hidden-badge">Hidden Assignments</Badge>
+				<Badge
+					variant="secondary"
+					outline={true}
+					title="There is a discrepancy between the points listed in the category and the sum of the points of the assignments in the category. This assignment has been generated to account for that discrepancy."
+				>
+					Point Discrepancy
+				</Badge>
 			{/if}
 
 			{#if unscaledPoints}
