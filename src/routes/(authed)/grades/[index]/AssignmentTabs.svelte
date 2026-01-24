@@ -190,9 +190,10 @@
 		notForGrade,
 		hidden,
 		category,
-		comments,
 		date,
-		newHypothetical
+		newHypothetical,
+		description,
+		comments
 	}: RealAssignment | Flowed<RealAssignment | HiddenAssignment>,
 	showCategory = true
 )}
@@ -200,6 +201,7 @@
 		<AssignmentCard
 			{name}
 			{id}
+			{description}
 			{pointsEarned}
 			{pointsPossible}
 			{unscaledPoints}

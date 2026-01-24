@@ -175,7 +175,7 @@ export interface AssignmentEntity {
 	 * 
 	 * Starts with '(Not For Grading) ' if assignment is not for grade
 	 * 
-	 * fast-xml-parser may be removing trailing whitespace */
+	 * fast-xml-parser may be removing leading/trailing whitespace */
 	_Notes: string;
 	/** number */
 	_TeacherID: string;

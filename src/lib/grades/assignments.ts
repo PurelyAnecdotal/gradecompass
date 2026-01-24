@@ -21,8 +21,9 @@ export interface Assignment {
 	hidden: boolean;
 	category: string | undefined;
 	date: Date;
-	comments?: string;
 	newHypothetical: boolean;
+	description?: string;
+	comments?: string;
 }
 
 export interface RealAssignment extends Assignment {
@@ -445,6 +446,7 @@ export function parseSynergyAssignment(synergyAssignment: AssignmentEntity) {
 	const {
 		_Date,
 		_Measure,
+		_MeasureDescription,
 		_Notes,
 		_Point,
 		_PointPossible,
@@ -490,7 +492,7 @@ export function parseSynergyAssignment(synergyAssignment: AssignmentEntity) {
 		};
 	}
 
-	const notesFormatted = _Notes.replace('(Not For Grading)', '');
+	const notesFormatted = _Notes.replace('(Not For Grading)', '').trim();
 
 	const assignment: RealAssignment = {
 		name: _Measure,
@@ -504,8 +506,9 @@ export function parseSynergyAssignment(synergyAssignment: AssignmentEntity) {
 		hidden: false,
 		category: _Type,
 		date: new Date(_Date),
-		comments: notesFormatted.length > 0 ? notesFormatted : undefined,
-		newHypothetical: false
+		newHypothetical: false,
+		description: _MeasureDescription.length > 0 ? _MeasureDescription : undefined,
+		comments: notesFormatted.length > 0 ? notesFormatted : undefined
 	};
 
 	return assignment;
