@@ -19,7 +19,6 @@
 		getHiddenAssignmentsFromCategories,
 		getPointsByCategory,
 		getPointsByCategoryMap,
-		getSynergyCourseAssignmentCategories,
 		gradesMatch,
 		type HiddenAssignment,
 		type NewHypotheticalAssignment,
@@ -28,6 +27,7 @@
 		type ReactiveAssignment,
 		type RealAssignment
 	} from '$lib/grades/assignments';
+	import { getSynergyCourseAssignmentCategories } from '$lib/grades/course';
 	import { getActiveGradebook } from '$lib/grades/gradebook';
 	import { saveSeenAssignmentsToLocalStorage } from '$lib/grades/seenAssignments';
 	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
@@ -51,7 +51,7 @@
 			: undefined
 	);
 
-	const mark = $derived(synergyCourse?.Marks !== '' ? synergyCourse?.Marks.Mark : undefined);
+	const mark = $derived(synergyCourse?.Marks?.Mark[0]);
 
 	const courseName = $derived(synergyCourse ? removeCourseType(synergyCourse._CourseName) : '');
 
@@ -63,7 +63,7 @@
 
 	const gradeCategories = $derived(categories?.filter((category) => category.name !== 'TOTAL'));
 
-	const synergyAssignments = $derived(mark?.Assignments.Assignment ?? []);
+	const synergyAssignments = $derived(mark?.Assignments?.Assignment ?? []);
 
 	const realAssignments = $derived(
 		calculateAssignmentGPCs(synergyAssignments.map(parseSynergyAssignment), gradeCategories)
@@ -165,7 +165,7 @@
 		reactiveAssignments = [newHypotheticalAssignment, ...reactiveAssignments];
 	}
 
-	const prefix = $derived(hypotheticalMode ? '' : mark?._CalculatedScoreString + ' ');
+	const prefix = $derived(hypotheticalMode ? '' : `${mark?._CalculatedScoreString} `);
 
 	const grade = $derived(
 		hypotheticalMode

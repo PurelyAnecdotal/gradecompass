@@ -30,7 +30,9 @@ type MethodName = (typeof MethodName)[keyof typeof MethodName];
 
 const alwaysArray = [
 	'Gradebook.Courses.Course',
+	'Gradebook.Courses.Course.Marks.Mark',
 	'Gradebook.Courses.Course.Marks.Mark.Assignments.Assignment',
+	'Gradebook.Courses.Course.Marks.Mark.Assignments.Assignment.Resources.Resource',
 	'Gradebook.ReportingPeriods.ReportPeriod',
 	'Attendance.Absences.Absence'
 ];
@@ -41,8 +43,27 @@ const resultParser = new XMLParser({
 	ignoreAttributes: false,
 	ignoreDeclaration: true,
 	attributeNamePrefix: '_',
-	isArray: (_name, jpath) => alwaysArray.includes(jpath)
+	isArray: (_name, jpath) => alwaysArray.includes(jpath),
+	attributeValueProcessor: (_name, value) =>
+		value === 'true' ? true : value === 'false' ? false : value
 });
+
+/** For use only with output of xml parser; applies only to non-attributes */
+function convertEmptyElementToNull<T>(obj: T): T {
+	if (typeof obj !== 'object' || obj === null) return obj;
+
+	if (Array.isArray(obj)) return obj.map(convertEmptyElementToNull) as T;
+
+	const newObj: any = {};
+	for (const [key, val] of Object.entries(obj)) {
+		if (val === '' && !key.startsWith('_')) {
+			newObj[key] = null;
+		} else {
+			newObj[key] = convertEmptyElementToNull(val);
+		}
+	}
+	return newObj;
+}
 
 const builder = new XMLBuilder({ ignoreAttributes: false, attributeNamePrefix: '_' });
 
@@ -142,7 +163,7 @@ const webServiceRequestMultiWeb = <T>(
 ) => soapRequest<T>(Operation.RequestMultiWeb, methodName, credentials, params);
 
 export const parseGradebookXML = (resultStr: string) =>
-	parseResult<GradebookResult>(resultStr).Gradebook;
+	convertEmptyElementToNull(parseResult<GradebookResult>(resultStr).Gradebook);
 
 export class StudentAccount {
 	domain: string;

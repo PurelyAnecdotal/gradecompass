@@ -12,10 +12,12 @@
 	import * as Select from '$lib/components/ui/select';
 	import { calculateGradePercentage } from '$lib/grades/assignments';
 	import MessageCircleIcon from '@lucide/svelte/icons/message-circle';
+	import TextAlignStartIcon from '@lucide/svelte/icons/text-align-start';
 
 	type Props = {
 		name: string;
 		id: string;
+		description?: string;
 		pointsEarned?: number;
 		pointsPossible?: number;
 		unscaledPoints?: { pointsEarned: number; pointsPossible: number };
@@ -45,6 +47,7 @@
 	let {
 		name = $bindable(),
 		id,
+		description,
 		pointsEarned = $bindable(),
 		pointsPossible = $bindable(),
 		unscaledPoints = $bindable(),
@@ -104,7 +107,7 @@
 	]}
 >
 	<div class="flex flex-1 flex-col gap-1 self-start sm:self-auto">
-		<div class="flex flex-wrap gap-1">
+		<div class="flex flex-wrap gap-1 items-center">
 			{#if editable}
 				<Input bind:value={name} class="inline w-32 sm:w-48" />
 
@@ -149,6 +152,18 @@
 				{/if}
 			{:else}
 				{name}
+			{/if}
+
+			{#if description && !editable}
+				<Popover.Root>
+					<Popover.Trigger
+						class={['ml-1', buttonVariants({ variant: 'outline', size: 'icon' })]}
+						title="Assignment description"
+					>
+						<TextAlignStartIcon />
+					</Popover.Trigger>
+					<Popover.Content>{description}</Popover.Content>
+				</Popover.Root>
 			{/if}
 		</div>
 
@@ -199,7 +214,13 @@
 			{/if}
 
 			{#if hidden}
-				<Badge variant="secondary" outline={true} class="hidden-badge">Hidden Assignments</Badge>
+				<Badge
+					variant="secondary"
+					outline={true}
+					title="There is a discrepancy between the points listed in the category and the sum of the points of the assignments in the category. This assignment has been generated to account for that discrepancy."
+				>
+					Point Discrepancy
+				</Badge>
 			{/if}
 
 			{#if unscaledPoints}

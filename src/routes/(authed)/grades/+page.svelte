@@ -3,15 +3,13 @@
 	import { brand } from '$lib/brand';
 	import * as Alert from '$lib/components/ui/alert';
 	import { Button } from '$lib/components/ui/button';
-	import { parseSynergyAssignment } from '$lib/grades/assignments';
 	import {
 		getReportPeriodName,
 		gradebookState,
 		switchReportPeriod
 	} from '$lib/grades/catalog.svelte';
+	import { clearCourseUnseenAssignments, getCourseGrade, getCourseUnseenAssignmentsCount } from '$lib/grades/course';
 	import { getActiveGradebook } from '$lib/grades/gradebook';
-	import { seenAssignmentIDs } from '$lib/grades/seenAssignments.svelte';
-	import type { Course } from '$lib/types/Gradebook';
 	import CircleXIcon from '@lucide/svelte/icons/circle-x';
 	import CourseButton from './CourseButton.svelte';
 	import ReportPeriodSwitcher from './ReportPeriodSwitcher.svelte';
@@ -28,51 +26,15 @@
 
 	const courses = $derived(gradebook?.Courses.Course);
 
-	function getCourseUnseenAssignmentsCount(course: Course) {
-		if (course.Marks === '') return 0;
-
-		const assignments = course.Marks.Mark.Assignments.Assignment;
-		if (!assignments) return 0;
-
-		return assignments.map(parseSynergyAssignment).filter(({ id }) => !seenAssignmentIDs.has(id))
-			.length;
-	}
-
-	function getCourseGrade(course: Course) {
-		if (course.Marks === '') return;
-
-		return {
-			letter: course.Marks.Mark._CalculatedScoreString,
-			percentage: parseFloat(course.Marks.Mark._CalculatedScoreRaw)
-		};
-	}
-
 	const hasNoGrades = $derived(
 		courses
-			? courses
-					.map((course) => (course.Marks === '' ? 'N/A' : course.Marks.Mark._CalculatedScoreString))
-					.every((score) => score === 'N/A')
-			: false
+			?.map((course) => course.Marks?.Mark[0]?._CalculatedScoreString ?? 'N/A')
+			.every((score) => score === 'N/A') ?? false
 	);
 
-	const totalUnseenAssignments = $derived.by(() => {
-		if (!courses) return 0;
-
-		return courses.reduce((total, course) => {
-			return total + getCourseUnseenAssignmentsCount(course);
-		}, 0);
-	});
-
-	const clearCourseUnseenAssignments = (course: Course) => {
-		if (course.Marks === '') return;
-		const assignments = course.Marks.Mark.Assignments.Assignment;
-		if (!assignments) return;
-
-		assignments.map(parseSynergyAssignment).forEach(({ id }) => seenAssignmentIDs.add(id));
-	};
-
-	const clearAllUnseenAssignments = (courses: Course[]) =>
-		courses.forEach(clearCourseUnseenAssignments);
+	const totalUnseenAssignments = $derived(
+		courses?.reduce((total, course) => total + getCourseUnseenAssignmentsCount(course), 0) ?? 0
+	);
 </script>
 
 <svelte:head>
@@ -130,7 +92,7 @@
 				<Alert.Title class="tracking-normal">
 					{totalUnseenAssignments} new assignment{totalUnseenAssignments === 1 ? '' : 's'}
 				</Alert.Title>
-				<Button variant="outline" onclick={() => clearAllUnseenAssignments(courses)}>
+				<Button variant="outline" onclick={() => courses.forEach(clearCourseUnseenAssignments)}>
 					Mark as seen
 				</Button>
 			</Alert.Root>

@@ -122,9 +122,7 @@ export async function initializeGradebookCatalog() {
 			gradebookState.gradebookCatalog.recordCache
 				.filter((record) => record !== undefined)
 				.flatMap((record) => parseGradebookXML(record.xml).Courses.Course)
-				.map((course) => course.Marks)
-				.filter((marks) => marks !== '')
-				.map((marks) => marks.Mark.Assignments.Assignment)
+				.map((course) => course.Marks?.Mark[0]?.Assignments?.Assignment)
 				.filter((assignments) => assignments !== undefined)
 				.flat()
 				.forEach((assignment) => seenAssignmentIDs.add(assignment._GradebookID));

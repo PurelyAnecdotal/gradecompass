@@ -1,4 +1,4 @@
-import type { AssignmentEntity, Course } from '../types/Gradebook';
+import type { AssignmentEntity } from '../types/Gradebook';
 
 export interface Category {
 	name: string;
@@ -21,8 +21,9 @@ export interface Assignment {
 	hidden: boolean;
 	category: string | undefined;
 	date: Date;
-	comments?: string;
 	newHypothetical: boolean;
+	description?: string;
+	comments?: string;
 }
 
 export interface RealAssignment extends Assignment {
@@ -292,7 +293,7 @@ export function getHiddenAssignmentsFromCategories(
 			if (Math.abs(gradePercentageChange) < 0.0001) return null;
 
 			const hiddenAssignment: Flowed<HiddenAssignment> = {
-				name: `Hidden ${category.name} Assignments`,
+				name: `Point Discrepancy in ${category.name}`,
 				id: randomAssignmentID(),
 				pointsEarned: hiddenPointsEarned,
 				pointsPossible: hiddenPointsPossible,
@@ -396,26 +397,6 @@ export function getAssignmentPointTotals<T extends Assignment>(assignments: Calc
 	return { pointsEarned, pointsPossible };
 }
 
-export function getSynergyCourseAssignmentCategories(course: Course) {
-	if (course?.Marks === '') return undefined;
-
-	const gradeCalcSummary = course?.Marks.Mark.GradeCalculationSummary;
-
-	if (typeof gradeCalcSummary === 'string' || !gradeCalcSummary?.AssignmentGradeCalc)
-		return undefined;
-
-	const categories: Category[] = gradeCalcSummary.AssignmentGradeCalc.map((category) => ({
-		name: category._Type,
-		weightPercentage: parseFloat(category._Weight),
-		pointsEarned: parseFloat(category._Points),
-		pointsPossible: parseFloat(category._PointsPossible),
-		weightedPercentage: parseFloat(category._WeightedPct),
-		gradeLetter: category._CalculatedMark
-	}));
-
-	return categories;
-}
-
 export function getCalculableAssignments<T extends Assignment>(assignments: T[]) {
 	return assignments
 		.map((assignment) => {
@@ -465,6 +446,7 @@ export function parseSynergyAssignment(synergyAssignment: AssignmentEntity) {
 	const {
 		_Date,
 		_Measure,
+		_MeasureDescription,
 		_Notes,
 		_Point,
 		_PointPossible,
@@ -473,65 +455,6 @@ export function parseSynergyAssignment(synergyAssignment: AssignmentEntity) {
 		_ScoreMaxValue,
 		_Type
 	} = synergyAssignment;
-
-	// Edge Cases:
-
-	// Normal:
-	// _Point: "3"
-	// _PointPossible: "4"
-	// _Points: "3 / 4"
-	// _ScoreCalValue: "3"
-	// _ScoreMaxValue: "4"
-	// _DisplayScore: "3 out of 4"
-
-	// Not Graded:
-	// _Point: undefined
-	// _PointPossible: undefined
-	// _Points: "4 Points Possible"
-	// _ScoreCalValue: undefined
-	// _ScoreMaxValue: "4" or undefined
-	// _DisplayScore: "Not Graded"
-
-	// Not Graded (Empty):
-	// _Point: undefined
-	// _PointPossible: undefined
-	// _Points: "Points Possible"
-	// _ScoreCalValue: undefined
-	// _ScoreMaxValue: undefined
-	// _DisplayScore: "Not Graded"
-
-	// Zero (Blank _Point):
-	// _Point: ""
-	// _PointPossible: "4"
-	// _Points: "/ 4"
-	// _ScoreCalValue: "0"
-	// _ScoreMaxValue: "4"
-	// _DisplayScore: "0 out of 4"
-
-	// Extra Credit:
-	// _Point: "3"
-	// _PointPossible: ""
-	// _Points: "3 /"
-	// _ScoreCalValue: "3"
-	// _ScoreMaxValue: "4"
-	// _DisplayScore: "3 out of 4"
-
-	// Not For Grading:
-	// _Point: "3"
-	// _PointPossible: "4"
-	// _Points: "3 / 4"
-	// _ScoreCalValue: "3"
-	// _ScoreMaxValue: "4"
-	// _DisplayScore: "3 out of 4"
-	// _Notes : "(Not For Grading)"
-
-	// Scaled:
-	// _Point: "6"
-	// _PointPossible: "8"
-	// _Points: "6 / 8"
-	// _ScoreCalValue: "3"
-	// _ScoreMaxValue: "4"
-	// _DisplayScore: "3 out of 4"
 
 	const pointsEarned = _Point !== undefined ? (_Point === '' ? 0 : parseFloat(_Point)) : undefined; // _Point can be empty; equivalent to 0
 
@@ -569,7 +492,7 @@ export function parseSynergyAssignment(synergyAssignment: AssignmentEntity) {
 		};
 	}
 
-	const notesFormatted = _Notes.replace('(Not For Grading)', '');
+	const notesFormatted = _Notes.replace('(Not For Grading)', '').trim();
 
 	const assignment: RealAssignment = {
 		name: _Measure,
@@ -579,12 +502,13 @@ export function parseSynergyAssignment(synergyAssignment: AssignmentEntity) {
 		unscaledPoints,
 		extraCredit: _PointPossible === '',
 		gradePercentageChange: undefined,
-		notForGrade: _Notes.includes('(Not For Grading)'),
+		notForGrade: _Notes.startsWith('(Not For Grading)'),
 		hidden: false,
 		category: _Type,
 		date: new Date(_Date),
-		comments: notesFormatted.length > 0 ? notesFormatted : undefined,
-		newHypothetical: false
+		newHypothetical: false,
+		description: _MeasureDescription.length > 0 ? _MeasureDescription : undefined,
+		comments: notesFormatted.length > 0 ? notesFormatted : undefined
 	};
 
 	return assignment;
