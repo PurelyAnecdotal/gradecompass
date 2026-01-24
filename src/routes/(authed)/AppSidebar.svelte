@@ -2,6 +2,7 @@
 	import { removeCourseType } from '$lib';
 	import { brand } from '$lib/brand';
 	import { buttonVariants } from '$lib/components/ui/button';
+	import Button from '$lib/components/ui/button/button.svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import { Spinner } from '$lib/components/ui/spinner';
@@ -117,14 +118,16 @@
 
 <Sidebar.Root>
 	<Sidebar.Header>
-		<Sidebar.Menu>
-			<Sidebar.MenuItem>
-				<div class="m-2 flex flex-row items-center">
-					<img src="/favicon.svg" class="size-6" alt={brand} />
-					<span class="ml-2 text-lg font-bold tracking-tight">{brand}</span>
-				</div>
-			</Sidebar.MenuItem>
+		<Sidebar.MenuItem>
+			<div class="m-2 flex flex-row items-center">
+				<img src="/favicon.svg" class="size-6" alt={brand} />
+				<span class="ml-2 text-lg font-bold tracking-tight">{brand}</span>
+			</div>
+		</Sidebar.MenuItem>
+	</Sidebar.Header>
 
+	<Sidebar.Content>
+		<Sidebar.Menu>
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton class="h-10 text-base">
 					{#snippet child({ props })}
@@ -165,9 +168,17 @@
 				{@render menuItem(item)}
 			{/each}
 		</Sidebar.Menu>
-	</Sidebar.Header>
 
-	<Sidebar.Content />
+		<Sidebar.MenuItem class="mt-auto mx-2">
+			<Button
+				href="/privacy"
+				variant="ghost"
+				class="text-muted-foreground h-auto border py-3 text-xs whitespace-normal"
+			>
+				Your password and grades are private and stored on-device.
+			</Button>
+		</Sidebar.MenuItem>
+	</Sidebar.Content>
 
 	<Sidebar.Footer>
 		<Sidebar.Menu class="gap-2">

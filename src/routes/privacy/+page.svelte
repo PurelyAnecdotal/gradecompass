@@ -19,20 +19,24 @@
 				<Card.Title>About the privacy of {brand}</Card.Title>
 			</Card.Header>
 
-			<Card.Content class="space-y-4">
+			<Card.Content class="text-tertiary-foreground space-y-4">
 				<p>
-					{brand} is designed to keep students' information private the entire time they use the service.
+					{brand} is designed to keep students' information private.
 				</p>
 
 				<p>
-					When a student uses {brand}, their own device sends their username and password directly
-					to the offical student portal, and the portal returns their student information directly
-					to their device. {brand} servers do not receive or process any student information. All student
-					information is stored and processed on-device.
+					When a student uses the {brand} interface, their own device transmits their username and password
+					directly to the official student portal, which returns their student information directly to
+					their device.
 				</p>
 
 				<p>
-					If you have questions or concerns about {brand}, please contact us at
+					{brand} servers do not receive any student data or login information. The GradeCompass interface
+					is purely client-side: all data is retrieved, processed, and stored on-device.
+				</p>
+
+				<p>
+					If you have questions or concerns about {brand}, you can contact us at
 					<a href="mailto:{email}" class="underline">{email}</a>.
 				</p>
 			</Card.Content>
