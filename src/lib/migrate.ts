@@ -20,11 +20,14 @@ export const migrateData = (currentOrigin: string, targetOrigin: string): Promis
 		const params = new URLSearchParams({ origin: currentOrigin });
 
 		const newWindow = open(`${targetOrigin}/migrate/import?${params.toString()}`);
-		if (!newWindow) return;
+		if (!newWindow) {
+			reject(new Error('Failed to open migration window'));
+			return;
+		}
 
 		const localStorageData = getLocalStorageMap();
 
-		addEventListener('message', (e) => {
+		const messageHandler = (e: MessageEvent) => {
 			if (e.origin !== targetOrigin) return;
 
 			const messageData: unknown = e.data;
@@ -32,9 +35,13 @@ export const migrateData = (currentOrigin: string, targetOrigin: string): Promis
 			if (messageData === 'ready') {
 				newWindow.postMessage(localStorageData, targetOrigin);
 			} else if (messageData === 'success') {
+				removeEventListener('message', messageHandler);
 				resolve();
 			} else {
+				removeEventListener('message', messageHandler);
 				reject(messageData);
 			}
-		});
+		};
+
+		addEventListener('message', messageHandler);
 	});

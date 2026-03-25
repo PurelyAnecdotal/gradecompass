@@ -3,6 +3,13 @@ import { env } from '$env/dynamic/public';
 import type { ClientInit } from '@sveltejs/kit';
 import { writable, type Writable } from 'svelte/store';
 
+declare global {
+	interface Window {
+		msw?: typeof import('$lib/mocks/browser').worker;
+	}
+}
+
+
 export const installPrompt: Writable<{ prompt?: () => Promise<UserChoice> }> = writable({});
 
 interface UserChoice {

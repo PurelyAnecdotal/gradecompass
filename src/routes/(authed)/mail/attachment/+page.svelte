@@ -14,6 +14,10 @@
 	const getAttachmentURL = async (attachmentGU: string | null) => {
 		if (attachmentGU === null) throw new Error('AttachmentGU not provided');
 
+		if (!/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$/i.test(attachmentGU)) {
+			throw new Error('Invalid attachmentGU format');
+		}
+		
 		if (!acc.studentAccount) throw new Error('Student account not loaded');
 
 		let attachment: Attachment;

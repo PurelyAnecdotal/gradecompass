@@ -14,6 +14,10 @@
 	const getReportCardURL = async (documentGU: string | null) => {
 		if (documentGU === null) throw new Error('DocumentGU not provided');
 
+		if (!/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}$/i.test(documentGU)) {
+			throw new Error('Invalid documentGU format');
+		}
+
 		if (!acc.studentAccount) throw new Error('Student account not loaded');
 
 		let reportCard: ReportCard;
