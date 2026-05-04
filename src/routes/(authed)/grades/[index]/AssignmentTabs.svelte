@@ -36,9 +36,17 @@
 	const categoryDropdownOptions = $derived(
 		gradeCategories ? new Set(gradeCategories.map((category) => category.name)) : undefined
 	);
+
+	let selectedCategory: string = $state('all');
+
+	$effect(() => {
+		if (!gradeCategories?.map((value) => value.name).includes(selectedCategory)) {
+			selectedCategory = 'all';
+		}
+	});
 </script>
 
-<Tabs.Root value="all" class="mx-4 gap-4">
+<Tabs.Root bind:value={selectedCategory} class="mx-4 gap-4">
 	<Tabs.List class="mx-auto h-12 max-w-full justify-start overflow-x-auto">
 		<Tabs.Trigger value="all">All</Tabs.Trigger>
 
