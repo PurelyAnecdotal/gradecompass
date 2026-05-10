@@ -15,6 +15,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { StudentAccount } from '$lib/synergy';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
+	import InfoIcon from '@lucide/svelte/icons/info';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import { fly } from 'svelte/transition';
 
@@ -74,6 +75,9 @@
 		domainDialogOpen = false;
 	}
 	let domainDialogOpen = $state(false);
+	function openDomainDialog() {
+		domainDialogOpen = true;
+	}
 </script>
 
 <svelte:head>
@@ -135,37 +139,17 @@
 				</Field.Field>
 
 				<Field.Field>
-					<div class="flex items-center">
-						<Field.Label for="domain">StudentVUE Domain</Field.Label>
+					<Field.Label for="domain">StudentVUE Domain</Field.Label>
 
-						<Dialog.Root bind:open={domainDialogOpen}>
-							<Dialog.Trigger
-								class="text-tertiary-foreground ms-auto inline-block text-sm underline"
-								form="none"
-							>
-								Help me find my domain
-							</Dialog.Trigger>
-
-							<Dialog.Content>
-								<form onsubmit={findDomain} class="space-y-4">
-									<Label for="pastedUrl">
-										Paste any link to your district's StudentVUE website
-									</Label>
-
-									<div class="flex gap-2">
-										<Input
-											id="pastedUrl"
-											type="url"
-											placeholder="https://[your-district]-psv.edupoint.com/Home_PXP2.aspx"
-											bind:value={pastedUrl}
-											required
-										/>
-										<Button type="submit" disabled={convertedDomain === undefined}>Submit</Button>
-									</div>
-								</form>
-							</Dialog.Content>
-						</Dialog.Root>
-					</div>
+					<Alert.Root>
+						<InfoIcon />
+						<Alert.Title>
+							{brand} can
+							<button onclick={openDomainDialog} class="underline">
+								find your domain for you
+							</button>.
+						</Alert.Title>
+					</Alert.Root>
 
 					<Input
 						type="text"
@@ -177,6 +161,25 @@
 						required
 					/>
 				</Field.Field>
+
+				<Dialog.Root bind:open={domainDialogOpen}>
+					<Dialog.Content>
+						<form onsubmit={findDomain} class="space-y-4">
+							<Label for="pastedUrl">Paste any link to your district's StudentVUE website</Label>
+
+							<div class="flex gap-2">
+								<Input
+									id="pastedUrl"
+									type="url"
+									placeholder="https://[your-district]-psv.edupoint.com/Home_PXP2.aspx"
+									bind:value={pastedUrl}
+									required
+								/>
+								<Button type="submit" disabled={convertedDomain === undefined}>Submit</Button>
+							</div>
+						</form>
+					</Dialog.Content>
+				</Dialog.Root>
 
 				<Field.Field orientation="horizontal" class="items-center">
 					<Checkbox name="disclaimer" id="disclaimer" required />
