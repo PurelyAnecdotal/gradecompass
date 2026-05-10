@@ -43,5 +43,5 @@
 		</Card.Root>
 	</main>
 
-	<Disclaimer />
+	<Disclaimer trademark={false} />
 </div>

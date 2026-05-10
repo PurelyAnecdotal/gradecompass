@@ -215,13 +215,12 @@ export function calculateAssignmentGPCsFromTotals<T extends Assignment>(assignme
 	const flowedAssignments: (T | Flowed<T>)[] = assignments
 		.toReversed()
 		.map((assignment) => {
-			const { pointsEarned, pointsPossible, notForGrade, category } = assignment;
+			const { pointsEarned, pointsPossible, notForGrade, } = assignment;
 
 			if (
 				pointsEarned === undefined ||
 				pointsPossible === undefined ||
-				notForGrade ||
-				category === undefined
+				notForGrade
 			)
 				return assignment;
 
@@ -229,8 +228,7 @@ export function calculateAssignmentGPCsFromTotals<T extends Assignment>(assignme
 				...assignment,
 				pointsEarned,
 				pointsPossible,
-				notForGrade,
-				category
+				notForGrade
 			};
 
 			const flowed = flowAssignmentFromTotals(calculable, totalPointsEarned, totalPointsPossible);
