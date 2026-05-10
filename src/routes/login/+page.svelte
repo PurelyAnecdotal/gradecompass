@@ -143,7 +143,7 @@
 
 					<Alert.Root>
 						<InfoIcon />
-						<Alert.Title>
+						<Alert.Title class="line-clamp-none">
 							{brand} can
 							<button onclick={openDomainDialog} class="underline">
 								find your domain for you
