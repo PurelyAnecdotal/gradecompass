@@ -13,7 +13,6 @@
 	} from '$lib/grades/assignments';
 	import { cn } from '$lib/utils';
 	import { Area, AreaChart, LinearGradient, Points } from 'layerchart';
-	import { SvelteMap } from 'svelte/reactivity';
 
 	interface Props {
 		assignments: Assignment[];
@@ -32,7 +31,7 @@
 		grade: number;
 	}[] = $derived.by(() => {
 		if (gradeCategories) {
-			const assignmentsByDate: Map<number, CalculableWithCategory<Assignment>[]> = new SvelteMap();
+			const assignmentsByDate: Map<number, CalculableWithCategory<Assignment>[]> = new Map();
 
 			const calculableAssignments = getCalculableAssignmentsWithCategories(assignments);
 
@@ -64,7 +63,7 @@
 				})
 				.filter((x) => x !== null);
 		} else {
-			const assignmentsByDate: Map<number, Calculable<Assignment>[]> = new SvelteMap();
+			const assignmentsByDate: Map<number, Calculable<Assignment>[]> = new Map();
 
 			const calculableAssignments = getCalculableAssignments(assignments);
 

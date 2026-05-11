@@ -7,15 +7,15 @@ export const loadStudentAccount = () => {
 	const token = localStorage.getItem(LocalStorageKey.token);
 	if (token === null) return;
 
-	const {
-		username,
-		password,
-		domain
-	}: {
-		username: string;
-		password: string;
-		domain: string;
-	} = JSON.parse(token);
+	let parsed: { username: string; password: string; domain: string };
+	try {
+		parsed = JSON.parse(token);
+	} catch {
+		localStorage.removeItem(LocalStorageKey.token);
+		return;
+	}
+
+	const { username, password, domain } = parsed;
 
 	acc.studentAccount = new StudentAccount(domain, username, password);
 };

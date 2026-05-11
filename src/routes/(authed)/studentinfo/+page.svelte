@@ -23,11 +23,21 @@
 			return;
 		}
 
-		await navigator.clipboard.writeText(data);
+		try {
+			await navigator.clipboard.writeText(data);
+		} catch {
+			alert('Could not copy to clipboard');
+		}
 	}
 
 	async function paste(key: string) {
-		const text = await navigator.clipboard.readText();
+		let text: string;
+		try {
+			text = await navigator.clipboard.readText();
+		} catch {
+			alert('Could not read from clipboard');
+			return;
+		}
 
 		try {
 			JSON.parse(text);
@@ -48,15 +58,21 @@
 
 	function copyUsername() {
 		if (!acc.studentAccount) return;
-		navigator.clipboard.writeText(acc.studentAccount.userID);
+		navigator.clipboard.writeText(acc.studentAccount.userID).catch(() => {
+			alert('Could not copy to clipboard');
+		});
 	}
 	function copyPassword() {
 		if (!acc.studentAccount) return;
-		navigator.clipboard.writeText(acc.studentAccount.password);
+		navigator.clipboard.writeText(acc.studentAccount.password).catch(() => {
+			alert('Could not copy to clipboard');
+		});
 	}
 	function copyDomain() {
 		if (!acc.studentAccount) return;
-		navigator.clipboard.writeText(acc.studentAccount.domain);
+		navigator.clipboard.writeText(acc.studentAccount.domain).catch(() => {
+			alert('Could not copy to clipboard');
+		});
 	}
 </script>
 
