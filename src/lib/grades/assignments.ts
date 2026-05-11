@@ -75,10 +75,15 @@ interface PointsByCategory {
 	};
 }
 
+const FLOATING_POINT_EPSILON = 1e-9;
+const isApproximatelyZero = (value: number) => Math.abs(value) < FLOATING_POINT_EPSILON;
+
 export function calculateGradePercentage(pointsEarned: number, pointsPossible: number) {
+	if (isApproximatelyZero(pointsPossible)) return 0;
+
 	let gradePercentage = (pointsEarned / pointsPossible) * 100;
 
-	if (isNaN(gradePercentage)) gradePercentage = 0;
+	if (!Number.isFinite(gradePercentage)) gradePercentage = 0;
 
 	return gradePercentage;
 }
@@ -95,16 +100,21 @@ export function calculateCourseGradePercentageFromCategories(
 	Object.entries(pointsByCategory).forEach(([categoryName, categoryPoints]) => {
 		const category = gradeCategories.find((category) => category.name === categoryName);
 		if (!category) return;
+		if (isApproximatelyZero(categoryPoints.pointsPossible)) return;
 
-		gradePercentage +=
-			(categoryPoints.pointsEarned / categoryPoints.pointsPossible) * category.weightPercentage;
+		const categoryGrade = categoryPoints.pointsEarned / categoryPoints.pointsPossible;
+		if (!Number.isFinite(categoryGrade)) return;
+
+		gradePercentage += categoryGrade * category.weightPercentage;
 		totalWeight += category.weightPercentage;
 	});
 
+	if (isApproximatelyZero(totalWeight)) return 0;
+
 	gradePercentage = (gradePercentage / totalWeight) * 100;
 
-	if (isNaN(gradePercentage)) {
-		console.error('Grade percentage is NaN');
+	if (!Number.isFinite(gradePercentage)) {
+		console.error('Grade percentage is not finite');
 		return 0;
 	}
 
@@ -215,13 +225,9 @@ export function calculateAssignmentGPCsFromTotals<T extends Assignment>(assignme
 	const flowedAssignments: (T | Flowed<T>)[] = assignments
 		.toReversed()
 		.map((assignment) => {
-			const { pointsEarned, pointsPossible, notForGrade, } = assignment;
+			const { pointsEarned, pointsPossible, notForGrade } = assignment;
 
-			if (
-				pointsEarned === undefined ||
-				pointsPossible === undefined ||
-				notForGrade
-			)
+			if (pointsEarned === undefined || pointsPossible === undefined || notForGrade)
 				return assignment;
 
 			const calculable: Calculable<T> = {
@@ -273,6 +279,8 @@ export function getHiddenAssignmentsFromCategories(
 
 			const hiddenPointsEarned = category.pointsEarned - pointsEarned;
 			const hiddenPointsPossible = category.pointsPossible - pointsPossible;
+
+			if (isApproximatelyZero(hiddenPointsPossible)) return null;
 
 			// Calculate grade prior to the assignment
 			const priorGrade = calculateCourseGradePercentageFromCategories(pointsByCategory, categories);
