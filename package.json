@@ -28,7 +28,7 @@
 		"bits-ui": "^2.15.4",
 		"buffer": "^6.0.3",
 		"clsx": "^2.1.1",
-		"eslint": "^9.39.2",
+		"eslint": "^10.0.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.14.0",
 		"fast-xml-parser": "^5.3.3",
